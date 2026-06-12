@@ -1,0 +1,117 @@
+# SessionShare Implementation Progress
+
+- [/] **Task 0: Fork & Clone cookie-editor**
+  - [x] Step 1: Download and extract cookie-editor (Initialized Git and pulled `master` branch from `Moustachauve/cookie-editor` to `D:\Private\Coding Project\SessionShare`)
+  - [ ] Step 2: Update `manifest.chrome.json` (rebrand + add permissions)
+  - [ ] Step 3: Create SessionShare config module (`interface/lib/sessionShareConfig.js`)
+  - [ ] Step 4: Add Supabase JS client for the extension (`interface/lib/supabaseClient.js`)
+  - [ ] Step 5: Create backend directory structure (`supabase/migrations`, `supabase/functions/_shared`, `tests/`)
+  - [ ] Step 6: Update `.gitignore`
+  - [ ] Step 7: Commit changes
+
+- [ ] **Task 1: Supabase Project & Auth Foundation**
+  - [ ] Step 1: Install Supabase CLI
+  - [ ] Step 2: Initialize Supabase project
+  - [ ] Step 3: Create `.env.example`
+  - [ ] Step 4: Create `.env.local`
+  - [ ] Step 5: Create `.gitignore`
+  - [ ] Step 6: Create `README.md`
+  - [ ] Step 7: Link to hosted Supabase project
+  - [ ] Step 8: Verify connection to remote database
+  - [ ] Step 9: Commit
+
+- [ ] **Task 2: Core Data Model Migration**
+  - [ ] Step 1: Create users profile table migration (`00001_create_users_table.sql`)
+  - [ ] Step 2: Run migration and verify users table
+  - [ ] Step 3: Create services table migration (`00002_create_services_table.sql`)
+  - [ ] Step 4: Run migration and verify services table
+  - [ ] Step 5: Create shared_session_cookies table migration (`00003_create_shared_session_cookies_table.sql`)
+  - [ ] Step 6: Run migration and verify shared_session_cookies table
+  - [ ] Step 7: Create cookie_access_logs table migration (`00004_create_cookie_access_logs_table.sql`)
+  - [ ] Step 8: Run migration and verify cookie_access_logs table
+  - [ ] Step 9: Create seed data for development
+  - [ ] Step 10: Run seed and verify data
+  - [ ] Step 11: Commit
+
+- [ ] **Task 3: Encryption Logic**
+  - [ ] Step 1: Write the failing test for encryption
+  - [ ] Step 2: Run tests to verify they fail
+  - [ ] Step 3: Create shared types (`supabase/functions/_shared/types.ts`)
+  - [ ] Step 4: Implement AES-256-GCM encryption module (`supabase/functions/_shared/crypto.ts`)
+  - [ ] Step 5: Run tests to verify they pass
+  - [ ] Step 6: Commit
+
+- [ ] **Task 4: Edge Functions API Scaffold**
+  - [ ] Step 1: Write the failing test for auth middleware
+  - [ ] Step 2: Run tests to verify they fail
+  - [ ] Step 3: Create CORS headers helper (`supabase/functions/_shared/cors.ts`)
+  - [ ] Step 4: Create standardized error responses (`supabase/functions/_shared/errors.ts`)
+  - [ ] Step 5: Create Supabase client factory (`supabase/functions/_shared/supabase-client.ts`)
+  - [ ] Step 6: Create auth middleware (`supabase/functions/_shared/auth.ts`)
+  - [ ] Step 7: Run tests to verify they pass
+  - [ ] Step 8: Commit
+
+- [ ] **Task 5: Extension Auth Integration**
+  - [ ] Step 1: Create auth page HTML (`interface/popup/auth.html`)
+  - [ ] Step 2: Create auth page JS (`interface/popup/auth.js`)
+  - [ ] Step 3: Add auth gate to `cookie-list.js`
+  - [ ] Step 4: Add user menu to `cookie-list.html`
+  - [ ] Step 5: Add logout handler in `cookie-list.js`
+  - [ ] Step 6: Bundle `supabase-js` locally for MV3 (`interface/lib/vendor/supabase.min.js`)
+  - [ ] Step 7: Commit
+
+- [ ] **Task 6: Services Endpoint + Extension Services Tab**
+  - [ ] Step 1: Create backend endpoint (`supabase/functions/services/index.ts`)
+  - [ ] Step 2: Create services panel JS for extension (`interface/popup/services-panel.js`)
+  - [ ] Step 3: Add services panel HTML to `cookie-list.html`
+  - [ ] Step 4: Wire up tab switching in `cookie-list.js`
+  - [ ] Step 5: Commit
+
+- [ ] **Task 7: Cookie Endpoint + Extension Injection**
+  - [ ] Step 1: Create backend endpoint (`supabase/functions/service-cookie/index.ts`)
+  - [ ] Step 2: Create cookie injector module (`interface/lib/cookieInjector.js`)
+  - [ ] Step 3: Update `services-panel.js` injection method
+  - [ ] Step 4: Commit
+
+- [ ] **Task 8: Access Logging (API + Extension)**
+  - [ ] Step 1: Create backend endpoint (`supabase/functions/logs-access/index.ts`)
+  - [ ] Step 2: Create extension access logger (`interface/lib/accessLogger.js`)
+  - [ ] Step 3: Wire logger into cookie injector
+  - [ ] Step 4: Commit
+
+- [ ] **Task 9: Admin Service CRUD**
+  - [ ] Step 1: Configure Supabase Storage bucket for icons
+  - [ ] Step 2: Add admin-specific tests in `tests/services.test.ts`
+  - [ ] Step 3: Run tests to verify they pass
+  - [ ] Step 4: Commit
+
+- [ ] **Task 10: Admin Cookie Upload**
+  - [ ] Step 1: Add admin cookie upload tests in `tests/service-cookie.test.ts`
+  - [ ] Step 2: Run tests to verify they pass
+  - [ ] Step 3: Commit
+
+- [ ] **Task 11: Rate Limiting**
+  - [ ] Step 1: Create rate limit table migration (`supabase/migrations/00005_create_rate_limit_table.sql`)
+  - [ ] Step 2: Run migration
+  - [ ] Step 3: Write the failing test for rate limiting
+  - [ ] Step 4: Run tests to verify they fail
+  - [ ] Step 5: Implement rate limiting module (`supabase/functions/_shared/rate-limit.ts`)
+  - [ ] Step 6: Run tests to verify they pass
+  - [ ] Step 7: Integrate rate limiting into service-cookie endpoint
+  - [ ] Step 8: Run all tests to verify nothing broke
+  - [ ] Step 9: Commit
+
+- [ ] **Task 12: RLS & Roles**
+  - [ ] Step 1: Create comprehensive RLS policies migration (`supabase/migrations/00006_rls_policies.sql`)
+  - [ ] Step 2: Run migration
+  - [ ] Step 3: Verify RLS is enforced
+  - [ ] Step 4: Commit
+
+- [ ] **Task 13: Admin Dashboard**
+  - [ ] Step 1: Write the failing test for admin dashboard
+  - [ ] Step 2: Run tests to verify state
+  - [ ] Step 3: Implement admin dashboard Edge Function (`supabase/functions/admin-dashboard/index.ts`)
+  - [ ] Step 4: Run tests to verify they pass
+  - [ ] Step 5: Run all tests as final verification
+  - [ ] Step 6: Commit
+  - [ ] Step 7: Final commit — tag release

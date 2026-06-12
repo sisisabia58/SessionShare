@@ -30,3 +30,11 @@ xcuserdata/
 .history
 .ionide
 .DS_Store
+
+# SessionShare backend
+.env.local
+.env.production
+.env.staging
+supabase/.temp/
+supabase/.branches/
+
