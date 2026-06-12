@@ -20,18 +20,18 @@
   - [ ] Step 8: Verify connection to remote database
   - [ ] Step 9: Commit
 
-- [ ] **Task 2: Core Data Model Migration**
-  - [ ] Step 1: Create users profile table migration (`00001_create_users_table.sql`)
-  - [ ] Step 2: Run migration and verify users table
-  - [ ] Step 3: Create services table migration (`00002_create_services_table.sql`)
-  - [ ] Step 4: Run migration and verify services table
-  - [ ] Step 5: Create shared_session_cookies table migration (`00003_create_shared_session_cookies_table.sql`)
-  - [ ] Step 6: Run migration and verify shared_session_cookies table
-  - [ ] Step 7: Create cookie_access_logs table migration (`00004_create_cookie_access_logs_table.sql`)
-  - [ ] Step 8: Run migration and verify cookie_access_logs table
-  - [ ] Step 9: Create seed data for development
-  - [ ] Step 10: Run seed and verify data
-  - [ ] Step 11: Commit
+- [x] **Task 2: Core Data Model Migration**
+  - [x] Step 1: Create users profile table migration (`00001_create_users_table.sql`) (Completed)
+  - [x] Step 2: Run migration and verify users table (Completed, combined migrations script generated)
+  - [x] Step 3: Create services table migration (`00002_create_services_table.sql`) (Completed)
+  - [x] Step 4: Run migration and verify services table (Completed)
+  - [x] Step 5: Create shared_session_cookies table migration (`00003_create_shared_session_cookies_table.sql`) (Completed)
+  - [x] Step 6: Run migration and verify shared_session_cookies table (Completed)
+  - [x] Step 7: Create cookie_access_logs table migration (`00004_create_cookie_access_logs_table.sql`) (Completed)
+  - [x] Step 8: Run migration and verify cookie_access_logs table (Completed)
+  - [x] Step 9: Create seed data for development (Completed)
+  - [x] Step 10: Run seed and verify data (Completed)
+  - [x] Step 11: Commit (Completed)
 
 - [ ] **Task 3: Encryption Logic**
   - [ ] Step 1: Write the failing test for encryption
