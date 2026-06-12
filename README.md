@@ -1,73 +1,66 @@
-[![grunt ESLint](https://github.com/Moustachauve/cookie-editor/actions/workflows/npm-grunt.yml/badge.svg)](https://github.com/Moustachauve/cookie-editor/actions/workflows/npm-grunt.yml)
-# Cookie-Editor
-[Cookie-Editor](https://cookie-editor.com/) is a browser extension/add-on that lets you efficiently create, edit and delete cookies for the current tab. Perfect for developing, quickly testing or even manually managing your cookies for your privacy.
+# SessionShare
 
-## Description
-Cookie-Editor is designed to have a simple to use interface that let you do most standard cookie operations quickly. It is ideal for developing and testing web pages.
+Secure session cookie sharing Chrome extension and backend database infrastructure.
+Forked from the excellent [cookie-editor](https://github.com/Moustachauve/cookie-editor) and extended with a Supabase backend for authenticated, shared session cookie distribution.
 
-You can easily create, edit and delete a cookie for the current page that you are visiting.
-There is also a handy button to mass delete all the cookies for the current page.
+## Architecture
 
-Cookie-Editor is available for:
-- Google Chrome
-- Firefox
-- Safari
-- Edge
-- Opera.
+1. **Extension**: A Chrome Extension (MV3) with:
+   - Supabase Auth integration for secure user login/signup.
+   - Services dashboard showing allowed premium services.
+   - One-click cookie injection directly into the current browser tab.
+   - Local vendor integration with `supabase-js`.
+2. **Backend**: A hosted Supabase instance containing:
+   - Relational tables for Users, Services, Shared Session Cookies, and Cookie Access Logs.
+   - Row-Level Security (RLS) to enforce authorization (Admins vs Members).
+   - Encryption modules protecting cookie data with AES-256-GCM.
+   - Serverless Edge Functions serving APIs with rate limiting and audit logging.
 
-It should be possible to install it on any webkit browser, but keep in mind that only the previous five browsers are officially supported.
+## Tech Stack
 
-Cookie-Editor is available on mobile devices with an interface optimised for touchscreens:
-- Firefox for Android 
-- Safari for iOS
-- Edge for Android and iOS
+- **Extension**: HTML, CSS, Vanilla JS (ES modules)
+- **Backend**: Supabase (Postgres Database, Auth, Storage, Edge Functions)
+- **Encryption**: AES-256-GCM (Web Crypto API)
+- **Build**: Grunt (existing cookie-editor build system)
 
-## Installation
-### Install on Google Chrome
-Find this extension on the [Chrome Web Store](https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm?utm_campaign=github).  
-[![Chrome Web Store](readme/get-chrome.png)](https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm?utm_campaign=github)
+---
 
-### Install on Firefox
-Find this extension on the [Firefox Add-ons site](https://addons.mozilla.org/addon/cookie-editor?utm_campaign=external-github-readme).  
-[![Firefox Add-ons](readme/get-firefox.webp)](https://addons.mozilla.org/addon/cookie-editor?utm_campaign=external-github-readme)
+## Getting Started
 
-### Install on Safari
-Cookie-Editor is available for both Mac and iOS. It has been tested on Mac, iPhone and iPad.  
-Find this extension on the [App Store](https://apps.apple.com/app/apple-store/id6446215341?pt=126143671&ct=github&mt=8).  
-[![Apple App Store](readme/get-safari-mac.svg)](https://apps.apple.com/app/apple-store/id6446215341?pt=126143671&ct=github&mt=8)
+### Prerequisites
 
-### Install on Microsoft Edge
-Find this extension on the [Microsoft Store](https://microsoftedge.microsoft.com/addons/detail/cookieeditor/neaplmfkghagebokkhpjpoebhdledlfi).
+- Supabase CLI (a local copy has been downloaded to `.bin/supabase.exe`).
+- Git.
 
-### Install on Opera
-Find this extension on the [Opera Extensions site](https://addons.opera.com/en/extensions/details/cookie-editor-2/).  
-[![Opera add-ons](readme/get-opera.png )](https://addons.opera.com/en/extensions/details/cookie-editor-2/)
+### Setup Instructions
 
-## Feature Suggestions or Bug Reports
-To submit a feature suggestion or file a bug report, please [create a new issue here](https://github.com/Moustachauve/cookie-editor/issues).
+1. **Clone & Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-## How to build
+2. **Configure Environment Variables**:
+   Copy `.env.example` to `.env.local`:
+   ```bash
+   cp .env.example .env.local
+   ```
+   Fill in the variables with your hosted Supabase credentials and an encryption key.
 
-1. Run npm install to make sure you have all the required packages installed.
-2. Run the command `grunt`
-3. All the files are in the `dist` directory created
+3. **Link to Hosted Supabase**:
+   Log in to Supabase and link your local repository:
+   ```bash
+   .bin/supabase login
+   .bin/supabase link --project-ref <your-supabase-project-ref>
+   ```
 
-### Note for Safari
+4. **Deploy Database Schema**:
+   Push the migrations to your remote Supabase database:
+   ```bash
+   .bin/supabase db push
+   ```
 
-Safari needs to be built in Xcode. I have only tested building Cookie-Editor on Xcode 15.
-
-## Thanks
-
-Thanks to DigitalOcean for supporting open-source software.
-
-<p>
-  <a href="https://digitalocean.pxf.io/k0BxXd">
-    <img alt="Powered by DigitalOcean" src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/PoweredByDO/DO_Powered_by_Badge_blue.svg" width="201px">
-  </a>
-</p>
-
-## Disclaimer
-
-This project is not an official Google project. It is not supported by
-Google and Google specifically disclaims all warranties as to its quality,
-merchantability, or fitness for a particular purpose.
+5. **Deploy Edge Functions**:
+   Deploy the serverless APIs:
+   ```bash
+   .bin/supabase functions deploy --no-verify-jwt
+   ```

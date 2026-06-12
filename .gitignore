@@ -37,4 +37,5 @@ xcuserdata/
 .env.staging
 supabase/.temp/
 supabase/.branches/
+.bin/
 

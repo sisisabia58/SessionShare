@@ -1,21 +1,21 @@
 # SessionShare Implementation Progress
 
-- [/] **Task 0: Fork & Clone cookie-editor**
+- [x] **Task 0: Fork & Clone cookie-editor**
   - [x] Step 1: Download and extract cookie-editor (Initialized Git and pulled `master` branch from `Moustachauve/cookie-editor` to `D:\Private\Coding Project\SessionShare`)
-  - [ ] Step 2: Update `manifest.chrome.json` (rebrand + add permissions)
-  - [ ] Step 3: Create SessionShare config module (`interface/lib/sessionShareConfig.js`)
-  - [ ] Step 4: Add Supabase JS client for the extension (`interface/lib/supabaseClient.js`)
-  - [ ] Step 5: Create backend directory structure (`supabase/migrations`, `supabase/functions/_shared`, `tests/`)
-  - [ ] Step 6: Update `.gitignore`
-  - [ ] Step 7: Commit changes
+  - [x] Step 2: Update `manifest.chrome.json` (rebrand + add permissions)
+  - [x] Step 3: Create SessionShare config module (`interface/lib/sessionShareConfig.js`)
+  - [x] Step 4: Add Supabase JS client for the extension (`interface/lib/supabaseClient.js`)
+  - [x] Step 5: Create backend directory structure (`supabase/migrations`, `supabase/functions/_shared`, `tests/`)
+  - [x] Step 6: Update `.gitignore`
+  - [x] Step 7: Commit changes
 
 - [ ] **Task 1: Supabase Project & Auth Foundation**
-  - [ ] Step 1: Install Supabase CLI
-  - [ ] Step 2: Initialize Supabase project
-  - [ ] Step 3: Create `.env.example`
-  - [ ] Step 4: Create `.env.local`
-  - [ ] Step 5: Create `.gitignore`
-  - [ ] Step 6: Create `README.md`
+  - [x] Step 1: Install Supabase CLI (Completed, downloaded to workspace `.bin/`)
+  - [x] Step 2: Initialize Supabase project (Completed)
+  - [x] Step 3: Create `.env.example` (Completed)
+  - [x] Step 4: Create `.env.local` (Completed, needs user credentials)
+  - [x] Step 5: Create `.gitignore` (Completed, ignores `.bin/` and env files)
+  - [x] Step 6: Create `README.md` (Completed)
   - [ ] Step 7: Link to hosted Supabase project
   - [ ] Step 8: Verify connection to remote database
   - [ ] Step 9: Commit
