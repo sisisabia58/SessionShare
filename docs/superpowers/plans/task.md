@@ -33,13 +33,13 @@
   - [x] Step 10: Run seed and verify data (Completed)
   - [x] Step 11: Commit (Completed)
 
-- [ ] **Task 3: Encryption Logic**
-  - [ ] Step 1: Write the failing test for encryption
-  - [ ] Step 2: Run tests to verify they fail
-  - [ ] Step 3: Create shared types (`supabase/functions/_shared/types.ts`)
-  - [ ] Step 4: Implement AES-256-GCM encryption module (`supabase/functions/_shared/crypto.ts`)
-  - [ ] Step 5: Run tests to verify they pass
-  - [ ] Step 6: Commit
+- [x] **Task 3: Encryption Logic**
+  - [x] Step 1: Write the failing test for encryption (Completed, created `tests/crypto.test.ts`)
+  - [x] Step 2: Run tests to verify they fail (Completed)
+  - [x] Step 3: Create shared types (`supabase/functions/_shared/types.ts`) (Completed)
+  - [x] Step 4: Implement AES-256-GCM encryption module (`supabase/functions/_shared/crypto.ts`) (Completed)
+  - [x] Step 5: Run tests to verify they pass (Completed, all 6 tests passed)
+  - [x] Step 6: Commit (Completed)
 
 - [ ] **Task 4: Edge Functions API Scaffold**
   - [ ] Step 1: Write the failing test for auth middleware
