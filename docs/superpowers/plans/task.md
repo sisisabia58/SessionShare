@@ -16,9 +16,9 @@
   - [x] Step 4: Create `.env.local` (Completed, needs user credentials)
   - [x] Step 5: Create `.gitignore` (Completed, ignores `.bin/` and env files)
   - [x] Step 6: Create `README.md` (Completed)
-  - [ ] Step 7: Link to hosted Supabase project
-  - [ ] Step 8: Verify connection to remote database
-  - [ ] Step 9: Commit
+  - [x] Step 7: Link to hosted Supabase project (Completed, verified credentials via API)
+  - [x] Step 8: Verify connection to remote database (Completed, confirmed ACTIVE_HEALTHY state)
+  - [x] Step 9: Commit (Completed, Task 1 files committed to Git)
 
 - [x] **Task 2: Core Data Model Migration**
   - [x] Step 1: Create users profile table migration (`00001_create_users_table.sql`) (Completed)
