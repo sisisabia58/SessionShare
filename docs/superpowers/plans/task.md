@@ -51,14 +51,14 @@
   - [x] Step 7: Run tests to verify they pass (Completed, all 3 tests passed)
   - [x] Step 8: Commit (Completed)
 
-- [ ] **Task 5: Extension Auth Integration**
-  - [ ] Step 1: Create auth page HTML (`interface/popup/auth.html`)
-  - [ ] Step 2: Create auth page JS (`interface/popup/auth.js`)
-  - [ ] Step 3: Add auth gate to `cookie-list.js`
-  - [ ] Step 4: Add user menu to `cookie-list.html`
-  - [ ] Step 5: Add logout handler in `cookie-list.js`
-  - [ ] Step 6: Bundle `supabase-js` locally for MV3 (`interface/lib/vendor/supabase.min.js`)
-  - [ ] Step 7: Commit
+- [x] **Task 5: Extension Auth Integration**
+  - [x] Step 1: Create auth page HTML (`interface/popup/auth.html`) (Completed)
+  - [x] Step 2: Create auth page JS (`interface/popup/auth.js`) (Completed)
+  - [x] Step 3: Add auth gate to `cookie-list.js` (Completed)
+  - [x] Step 4: Add user menu to `cookie-list.html` (Completed)
+  - [x] Step 5: Add logout handler in `cookie-list.js` (Completed)
+  - [x] Step 6: Bundle `supabase-js` locally for MV3 (`interface/lib/vendor/supabase.min.js`) (Completed)
+  - [x] Step 7: Commit (Completed)
 
 - [ ] **Task 6: Services Endpoint + Extension Services Tab**
   - [ ] Step 1: Create backend endpoint (`supabase/functions/services/index.ts`)
