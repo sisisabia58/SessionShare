@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <div id="auth-container">
+    <div class="auth-header">
+      <img src="../../icons/cookie-48-filled.png" alt="SessionShare">
+      <h1>SessionShare</h1>
+      <p class="auth-subtitle">Sign in to access shared sessions</p>
+    </div>
+
+    <div id="auth-form">
+      <div class="form-group">
+        <label for="auth-email">Email</label>
+        <input type="email" id="auth-email" placeholder="your@email.com" required>
+      </div>
+      <div class="form-group">
+        <label for="auth-password">Password</label>
+        <input type="password" id="auth-password" placeholder="••••••••" required>
+      </div>
+      <div id="auth-error" class="auth-error" style="display:none;"></div>
+      <button id="btn-login" class="btn-primary">Sign In</button>
+      <button id="btn-signup" class="btn-secondary">Create Account</button>
+    </div>
+
+    <div id="auth-loading" style="display:none;">
+      <div class="spinner"></div>
+      <p>Authenticating...</p>
+    </div>
+  </div>
+
+  <script type="module" src="auth.js"></script>
+</body>
+</html>

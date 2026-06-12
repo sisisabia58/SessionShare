@@ -12,6 +12,7 @@ import { OptionsHandler } from '../lib/optionsHandler.js';
 import { PermissionHandler } from '../lib/permissionHandler.js';
 import { ThemeHandler } from '../lib/themeHandler.js';
 import { CookieHandlerPopup } from './cookieHandlerPopup.js';
+import { getSupabase, initSupabase, getCurrentUser } from '../lib/supabaseClient.js';
 
 (function () {
   ('use strict');
@@ -1066,6 +1067,69 @@ import { CookieHandlerPopup } from './cookieHandlerPopup.js';
    * @param {object} _tab The current Tab.
    */
   async function initWindow(_tab) {
+    // SessionShare Auth Gate Check
+    const { createClient } = await import('../lib/vendor/supabase.min.js');
+    initSupabase(createClient);
+
+    let user;
+    try {
+      user = await getCurrentUser();
+    } catch (err) {
+      console.error('Auth verification check failed:', err);
+    }
+
+    if (!user) {
+      window.location.href = 'auth.html';
+      return;
+    }
+
+    // Populate user profile info
+    const emailEl = document.getElementById('user-email');
+    if (emailEl) {
+      emailEl.textContent = user.email;
+    }
+
+    // Logout trigger
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          const supabase = getSupabase();
+          await supabase.auth.signOut();
+          window.location.href = 'auth.html';
+        } catch (err) {
+          console.error('Logout failed:', err);
+        }
+      });
+    }
+
+    // Set up tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', async (e) => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+
+        const tabName = e.target.dataset.tab;
+        const cookiesPanel = document.getElementById('cookie-list-panel');
+        const servicesPanel = document.getElementById('services-panel');
+        const defaultBar = document.getElementById('button-bar-default');
+
+        if (cookiesPanel) cookiesPanel.style.display = tabName === 'cookies' ? 'block' : 'none';
+        if (servicesPanel) servicesPanel.style.display = tabName === 'services' ? 'block' : 'none';
+        if (defaultBar) defaultBar.style.display = tabName === 'cookies' ? 'block' : 'none';
+
+        if (tabName === 'services') {
+          try {
+            const { ServicesPanel } = await import('./services-panel.js');
+            const panel = new ServicesPanel(document.getElementById('services-list'));
+            panel.loadServices();
+          } catch (err) {
+            console.error('Failed to load ServicesPanel:', err);
+          }
+        }
+      });
+    });
+
     await optionHandler.loadOptions();
     themeHandler.updateTheme();
     moveButtonBar();

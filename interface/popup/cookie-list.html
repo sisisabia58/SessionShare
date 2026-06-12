@@ -5,13 +5,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
-    <title>Cookie-Editor</title>
+    <link rel="stylesheet" href="sessionshare.css" />
+    <title>SessionShare</title>
   </head>
 
   <body class="notransition">
     <div id="pageTitle">
       <h1 class="container">
-        Cookie-Editor
+        SessionShare
       </h1>
       <div id="version"></div>
       <div id="main-menu">
@@ -46,9 +47,28 @@
       </div>
     </div>
 
-    <div id="ad-container"></div>
+    <!-- SessionShare User Details & Tabs -->
+    <div id="sessionshare-user-bar" class="user-bar">
+      <span id="user-email" class="user-email"></span>
+      <button id="btn-logout" class="btn-logout-icon" title="Sign Out">
+        <svg class="icon"><use href="../sprites/solid.svg#sign-out-alt"></use></svg>
+      </button>
+    </div>
 
-    <div id="cookie-container"></div>
+    <div id="tab-bar" class="tab-bar">
+      <button class="tab active" data-tab="cookies">My Cookies</button>
+      <button class="tab" data-tab="services">Services</button>
+    </div>
+
+    <div id="cookie-list-panel" class="panel-tab-content">
+      <div id="cookie-container"></div>
+    </div>
+
+    <div id="services-panel" class="panel-tab-content" style="display:none;">
+      <div id="services-list" class="services-list">
+        <!-- Populated by services-panel.js -->
+      </div>
+    </div>
 
     <div class="panel button-bar active" id="button-bar-default">
       <div class="panel-section panel-section-footer">
