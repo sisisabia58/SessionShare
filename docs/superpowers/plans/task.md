@@ -60,12 +60,12 @@
   - [x] Step 6: Bundle `supabase-js` locally for MV3 (`interface/lib/vendor/supabase.min.js`) (Completed)
   - [x] Step 7: Commit (Completed)
 
-- [ ] **Task 6: Services Endpoint + Extension Services Tab**
-  - [ ] Step 1: Create backend endpoint (`supabase/functions/services/index.ts`)
-  - [ ] Step 2: Create services panel JS for extension (`interface/popup/services-panel.js`)
-  - [ ] Step 3: Add services panel HTML to `cookie-list.html`
-  - [ ] Step 4: Wire up tab switching in `cookie-list.js`
-  - [ ] Step 5: Commit
+- [x] **Task 6: Services Endpoint + Extension Services Tab**
+  - [x] Step 1: Create backend endpoint (`supabase/functions/services/index.ts`) (Completed)
+  - [x] Step 2: Create services panel JS for extension (`interface/popup/services-panel.js`) (Completed)
+  - [x] Step 3: Add services panel HTML to `cookie-list.html` (Completed, done in Task 5)
+  - [x] Step 4: Wire up tab switching in `cookie-list.js` (Completed, done in Task 5)
+  - [x] Step 5: Commit (Completed)
 
 - [ ] **Task 7: Cookie Endpoint + Extension Injection**
   - [ ] Step 1: Create backend endpoint (`supabase/functions/service-cookie/index.ts`)
