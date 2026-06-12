@@ -41,15 +41,15 @@
   - [x] Step 5: Run tests to verify they pass (Completed, all 6 tests passed)
   - [x] Step 6: Commit (Completed)
 
-- [ ] **Task 4: Edge Functions API Scaffold**
-  - [ ] Step 1: Write the failing test for auth middleware
-  - [ ] Step 2: Run tests to verify they fail
-  - [ ] Step 3: Create CORS headers helper (`supabase/functions/_shared/cors.ts`)
-  - [ ] Step 4: Create standardized error responses (`supabase/functions/_shared/errors.ts`)
-  - [ ] Step 5: Create Supabase client factory (`supabase/functions/_shared/supabase-client.ts`)
-  - [ ] Step 6: Create auth middleware (`supabase/functions/_shared/auth.ts`)
-  - [ ] Step 7: Run tests to verify they pass
-  - [ ] Step 8: Commit
+- [x] **Task 4: Edge Functions API Scaffold**
+  - [x] Step 1: Write the failing test for auth middleware (Completed, created `tests/auth.test.ts`)
+  - [x] Step 2: Run tests to verify they fail (Completed)
+  - [x] Step 3: Create CORS headers helper (`supabase/functions/_shared/cors.ts`) (Completed)
+  - [x] Step 4: Create standardized error responses (`supabase/functions/_shared/errors.ts`) (Completed)
+  - [x] Step 5: Create Supabase client factory (`supabase/functions/_shared/supabase-client.ts`) (Completed)
+  - [x] Step 6: Create auth middleware (`supabase/functions/_shared/auth.ts`) (Completed)
+  - [x] Step 7: Run tests to verify they pass (Completed, all 3 tests passed)
+  - [x] Step 8: Commit (Completed)
 
 - [ ] **Task 5: Extension Auth Integration**
   - [ ] Step 1: Create auth page HTML (`interface/popup/auth.html`)
