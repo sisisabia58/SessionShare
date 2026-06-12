@@ -87,12 +87,33 @@ export class ServicesPanel {
   }
 
   async injectServiceCookie(serviceId, button) {
-    // This will be fully implemented in Task 7
-    button.textContent = 'Loading...';
+    const originalText = button.textContent;
+    button.textContent = 'Injecting...';
     button.disabled = true;
-    setTimeout(() => {
-      button.textContent = 'Use Session ▶';
-      button.disabled = false;
-    }, 1500);
+    button.classList.remove('success', 'error');
+
+    try {
+      const { injectServiceCookies } = await import('../lib/cookieInjector.js');
+      await injectServiceCookies(serviceId);
+      
+      button.textContent = 'Success! ✓';
+      button.classList.add('success');
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.disabled = false;
+        button.classList.remove('success');
+      }, 2000);
+    } catch (error) {
+      console.error('Cookie injection failed:', error);
+      button.textContent = 'Failed ✗';
+      button.classList.add('error');
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.disabled = false;
+        button.classList.remove('error');
+      }, 3000);
+    }
   }
 }
