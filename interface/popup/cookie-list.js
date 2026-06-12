@@ -1068,8 +1068,7 @@ import { getSupabase, initSupabase, getCurrentUser } from '../lib/supabaseClient
    */
   async function initWindow(_tab) {
     // SessionShare Auth Gate Check
-    const { createClient } = await import('../lib/vendor/supabase.min.js');
-    initSupabase(createClient);
+    await initSupabase();
 
     let user;
     try {

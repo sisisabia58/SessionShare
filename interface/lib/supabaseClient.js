@@ -23,9 +23,20 @@ export function getSupabase() {
 /**
  * Initialize the Supabase client.
  * Called once during extension startup.
- * @param {function} createClient - The createClient function from @supabase/supabase-js
  */
-export function initSupabase(createClient) {
+export async function initSupabase() {
+  if (_supabaseClient) return _supabaseClient;
+
+  // Dynamically import local UMD bundle which populates window.supabase
+  await import('./vendor/supabase.min.js');
+
+  const supabaseLib = window.supabase;
+  if (!supabaseLib || typeof supabaseLib.createClient !== 'function') {
+    throw new Error('Supabase UMD library failed to load globally.');
+  }
+
+  const { createClient } = supabaseLib;
+
   _supabaseClient = createClient(
     SessionShareConfig.SUPABASE_URL,
     SessionShareConfig.SUPABASE_ANON_KEY,

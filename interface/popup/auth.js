@@ -3,8 +3,7 @@ import { SessionShareConfig } from '../lib/sessionShareConfig.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Initialize Supabase (will load bundled supabase-js)
-  const { createClient } = await import('../lib/vendor/supabase.min.js');
-  initSupabase(createClient);
+  await initSupabase();
 
   const supabase = getSupabase();
   const emailInput = document.getElementById('auth-email');
