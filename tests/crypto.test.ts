@@ -67,13 +67,13 @@ Deno.test("each encryption produces different ciphertext (unique IV)", async () 
   assertNotEquals(encrypted1, encrypted2);
 });
 
-Deno.test("encrypt rejects invalid key length", async () => {
+Deno.test("encrypt rejects empty key", async () => {
   const { encrypt } = await import("../supabase/functions/_shared/crypto.ts");
-  const shortKey = "abcd";
+  const emptyKey = "";
 
   await assertRejects(
-    () => encrypt("data", shortKey),
+    () => encrypt("data", emptyKey),
     Error,
-    "Invalid encryption key",
+    "Invalid encryption key: key string cannot be empty",
   );
 });

@@ -27,7 +27,7 @@ export class ServicesPanel {
     this.container.innerHTML = '<div class="loading">Loading services...</div>';
 
     try {
-      const response = await fetch(`${SessionShareConfig.API_BASE}/services`, {
+      const response = await fetch(`${SessionShareConfig.API_BASE}/service`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ export class ServicesPanel {
       if (!response.ok) throw new Error('Failed to load services');
 
       const data = await response.json();
-      this.services = data.services || [];
+      this.services = (data.services || []).filter(s => !s.is_folder);
       this.render();
     } catch (error) {
       this.container.innerHTML = `<div class="error">Failed to load services: ${error.message}</div>`;
@@ -58,12 +58,14 @@ export class ServicesPanel {
         hostname = service.website_url;
       }
 
+      const badgeText = service.cookie_count > 0 ? ` (${service.cookie_count})` : '';
+
       return `
         <div class="service-card" data-service-id="${service.id}">
           <img class="service-icon" src="${service.icon_url || '../../icons/cookie-32-filled.png'}" 
                alt="${service.name}" onerror="this.src='../../icons/cookie-32-filled.png'">
           <div class="service-info">
-            <h3 class="service-name">${service.name}</h3>
+            <h3 class="service-name">${service.name}${badgeText}</h3>
             <a class="service-url" href="${service.website_url}" target="_blank">${hostname}</a>
           </div>
           <button class="btn-inject" data-service-id="${service.id}" title="Inject session cookies">

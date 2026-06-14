@@ -9,16 +9,15 @@ function hexToBytes(hex: string): Uint8Array {
   return bytes;
 }
 
-async function importKey(hexKey: string): Promise<CryptoKey> {
-  if (!hexKey || hexKey.length !== KEY_LENGTH * 2) {
-    throw new Error(
-      `Invalid encryption key: expected ${KEY_LENGTH * 2} hex characters, got ${hexKey?.length ?? 0}`,
-    );
+async function importKey(keyString: string): Promise<CryptoKey> {
+  if (!keyString) {
+    throw new Error("Invalid encryption key: key string cannot be empty");
   }
-  const keyBytes = hexToBytes(hexKey);
+  const encodedKey = new TextEncoder().encode(keyString);
+  const keyHash = await crypto.subtle.digest("SHA-256", encodedKey);
   return crypto.subtle.importKey(
     "raw",
-    keyBytes as any,
+    keyHash,
     { name: "AES-GCM" },
     false,
     ["encrypt", "decrypt"],

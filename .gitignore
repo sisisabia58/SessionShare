@@ -39,3 +39,7 @@ supabase/.temp/
 supabase/.branches/
 .bin/
 
+# Cookie data & encryption outputs
+capcut.json
+scribd_cookies.json
+encrypted_output.txt

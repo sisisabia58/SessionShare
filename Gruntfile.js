@@ -66,7 +66,7 @@ module.exports = function (grunt) {
         files: [
           {
             expand: true,
-            src: ['cookie-editor.js'],
+            src: ['background.js'],
             dest: 'build/<%= grunt.task.current.target %>/',
             filter: 'isFile',
           },
@@ -95,7 +95,7 @@ module.exports = function (grunt) {
         files: [
           {
             expand: true,
-            src: ['cookie-editor.js'],
+            src: ['background.js'],
             dest: 'build/<%= grunt.task.current.target %>/',
             filter: 'isFile',
           },
@@ -124,7 +124,7 @@ module.exports = function (grunt) {
         files: [
           {
             expand: true,
-            src: ['cookie-editor.js'],
+            src: ['background.js'],
             dest: 'build/<%= grunt.task.current.target %>/',
             filter: 'isFile',
           },
@@ -153,7 +153,7 @@ module.exports = function (grunt) {
         files: [
           {
             expand: true,
-            src: ['cookie-editor.js'],
+            src: ['background.js'],
             dest: 'build/<%= grunt.task.current.target %>/',
             filter: 'isFile',
           },
@@ -182,7 +182,7 @@ module.exports = function (grunt) {
         files: [
           {
             expand: true,
-            src: ['cookie-editor.js'],
+            src: ['background.js'],
             dest: 'build/<%= grunt.task.current.target %>/',
             filter: 'isFile',
           },

@@ -1,51 +1,70 @@
 {
-	"manifest_version": 3,
-	"name": "SessionShare",
-	"version": "1.0.0",
-	"author": "SessionShare",
-	"description": "Share and inject session cookies for premium services securely.",
-	"offline_enabled": false,
-	"minimum_chrome_version": "102",
-	"background": {
-		"service_worker": "cookie-editor.js",
-		"type": "module"
-	},
-	"action": {
-		"default_icon": {
-			"16": "icons/cookie-16-filled.png",
-			"19": "icons/cookie-19-filled.png",
-			"32": "icons/cookie-32-filled.png",
-			"48": "icons/cookie-48-filled.png"
-		},
-		"default_title": "SessionShare",
-		"default_popup": "interface/popup/cookie-list.html"
-	},
-	"side_panel": {
-		"default_path": "interface/sidepanel/cookie-list.html"
-	},
-	"devtools_page": "interface/devtools/devtool.html",
-	"options_ui": {
-		"page": "interface/options/options.html"
-	},
-	"permissions": [
-		"cookies",
-		"tabs",
-		"storage",
-		"sidePanel",
-		"identity"
-	],
-	"host_permissions": [
-		"<all_urls>"
-	],
-	"content_security_policy": {
-		"extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://*.supabase.co"
-	},
-	"icons": {
-		"16": "icons/cookie-16-filled.png",
-		"19": "icons/cookie-19-filled.png",
-		"32": "icons/cookie-32-filled.png",
-		"48": "icons/cookie-48-filled.png",
-		"128": "icons/cookie-128-filled.png"
-	},
-	"incognito": "split"
+  "manifest_version": 3,
+  "name": "SessionShare Extension",
+  "version": "2.3.0",
+  "author": "SessionShare",
+  "description": "Requires SessionShare Guard 1.0.4. Unlock premium experiences together with our one-click access extension.",
+  "offline_enabled": false,
+  "minimum_chrome_version": "102",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/cookie-16-filled.png",
+      "19": "icons/cookie-19-filled.png",
+      "32": "icons/cookie-32-filled.png",
+      "48": "icons/cookie-48-filled.png"
+    },
+    "default_title": "SessionShare Extension",
+    "default_popup": "interface/popup/popup.html"
+  },
+  "permissions": [
+    "cookies",
+    "tabs",
+    "storage",
+    "identity",
+    "declarativeNetRequest",
+    "management",
+    "browsingData"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://*.supabase.co"
+  },
+  "icons": {
+    "16": "icons/cookie-16-filled.png",
+    "32": "icons/cookie-32-filled.png",
+    "48": "icons/cookie-48-filled.png",
+    "128": "icons/cookie-128-filled.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.chatgpt.com/*",
+        "*://*.turnitin.com/*",
+        "*://*.netflix.com/*",
+        "*://*.writehuman.ai/*"
+      ],
+      "js": [
+        "interface/content/sessionshare-modifyer.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "interface/content/sessionshare.js"
+      ],
+      "matches": [
+        "*://*.chatgpt.com/*"
+      ]
+    }
+  ],
+  "incognito": "split"
 }

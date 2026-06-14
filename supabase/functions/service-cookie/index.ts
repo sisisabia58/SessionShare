@@ -1,41 +1,75 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
-import { handleCors } from "../_shared/cors.ts";
-import { getAuthenticatedUser } from "../_shared/auth.ts";
-import { createJsonResponse, createErrorResponse } from "../_shared/errors.ts";
-import { createAdminClient } from "../_shared/supabase-client.ts";
-import { decrypt } from "../_shared/crypto.ts";
-import { checkRateLimit } from "../_shared/rate-limit.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// ── CORS ─────────────────────────────────────────────────────────
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+};
+
+function jsonRes(data: unknown) {
+  return new Response(JSON.stringify(data), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+}
+
+function errRes(status: number, code: string, message: string) {
+  return new Response(JSON.stringify({ error: { code, message } }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+}
+
+// ── Supabase clients ─────────────────────────────────────────────
+function userClient(req: Request) {
+  return createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+  });
+}
+
+function adminClient() {
+  return createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+}
+
+// ── Crypto ───────────────────────────────────────────────────────
+const IV_LENGTH = 12;
+
+async function importKey(keyString: string): Promise<CryptoKey> {
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(keyString));
+  return crypto.subtle.importKey("raw", hash, { name: "AES-GCM" }, false, ["decrypt"]);
+}
+
+async function decrypt(encryptedBase64: string, keyString: string): Promise<string> {
+  const key = await importKey(keyString);
+  const bin = atob(encryptedBase64);
+  const combined = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) combined[i] = bin.charCodeAt(i);
+
+  const iv = combined.slice(0, IV_LENGTH);
+  const ct = combined.slice(IV_LENGTH);
+  const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct);
+  return new TextDecoder().decode(decrypted);
+}
+
+// ── Handler ──────────────────────────────────────────────────────
 serve(async (req: Request) => {
-  // Handle CORS preflight
-  const corsResponse = handleCors(req);
-  if (corsResponse) return corsResponse;
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "GET") return errRes(405, "METHOD_NOT_ALLOWED", "Only GET");
 
-  if (req.method !== "GET") {
-    return createErrorResponse(405, "METHOD_NOT_ALLOWED", "Only GET is allowed");
-  }
+  // Auth
+  const auth = req.headers.get("Authorization");
+  if (!auth?.startsWith("Bearer ")) return errRes(401, "UNAUTHORIZED", "Missing auth");
 
-  // Authenticate user
-  const authResult = await getAuthenticatedUser(req);
-  if ("error" in authResult) return authResult.error;
-  const { user } = authResult;
+  const { data: { user }, error: ue } = await userClient(req).auth.getUser();
+  if (ue || !user) return errRes(401, "UNAUTHORIZED", "Invalid token");
 
-  const adminClient = createAdminClient();
+  const admin = adminClient();
+  const { data: profile } = await admin.from("users").select("role").eq("id", user.id).single();
+  if (!profile) return errRes(500, "INTERNAL_ERROR", "No profile");
 
-  // Enforce sliding window rate limit
-  const rateLimitResponse = await checkRateLimit(adminClient, user.id, "service-cookie");
-  if (rateLimitResponse) return rateLimitResponse;
-
-  // Get service_id from query parameters
+  // Get service_id
   const url = new URL(req.url);
   const serviceId = url.searchParams.get("service_id");
+  if (!serviceId) return errRes(400, "BAD_REQUEST", "Missing service_id");
 
-  if (!serviceId) {
-    return createErrorResponse(400, "BAD_REQUEST", "Missing service_id query parameter");
-  }
-  
-  // Fetch the active, non-expired cookie for this service
-  const { data: cookieRecord, error } = await adminClient
+  // Fetch cookie
+  const { data: rec, error: re } = await admin
     .from("shared_session_cookies")
     .select("encrypted_cookie_data, expires_at")
     .eq("service_id", serviceId)
@@ -45,28 +79,17 @@ serve(async (req: Request) => {
     .limit(1)
     .maybeSingle();
 
-  if (error) {
-    console.error("Fetch cookie record failed:", error);
-    return createErrorResponse(500, "DATABASE_ERROR", "Failed to retrieve session cookie");
-  }
+  if (re) return errRes(500, "DATABASE_ERROR", "DB error");
+  if (!rec) return errRes(404, "NOT_FOUND", "No active session cookie found");
 
-  if (!cookieRecord) {
-    return createErrorResponse(404, "NOT_FOUND", "No active session cookie found for this service");
-  }
-
-  // Decrypt the cookie data using server's ENCRYPTION_KEY
+  // Decrypt
   const encryptionKey = Deno.env.get("ENCRYPTION_KEY") ?? "";
-  let decryptedCookieData: string;
-
+  let cookieData: string;
   try {
-    decryptedCookieData = await decrypt(cookieRecord.encrypted_cookie_data, encryptionKey);
-  } catch (decryptError) {
-    console.error("Decryption failed for cookie:", decryptError);
-    return createErrorResponse(500, "ENCRYPTION_ERROR", "Failed to decrypt session cookie");
+    cookieData = await decrypt(rec.encrypted_cookie_data, encryptionKey);
+  } catch {
+    return errRes(500, "ENCRYPTION_ERROR", "Failed to decrypt");
   }
 
-  return createJsonResponse({
-    cookie_data: decryptedCookieData,
-    expires_at: cookieRecord.expires_at,
-  });
+  return jsonRes({ cookie_data: cookieData, expires_at: rec.expires_at });
 });
