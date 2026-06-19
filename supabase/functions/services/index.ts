@@ -64,17 +64,24 @@ serve(async (req: Request) => {
 
     if (error) return errRes(500, "DATABASE_ERROR", "Failed to retrieve services");
 
-    // Fetch active cookie counts grouped by service_id
+    // Fetch active cookie distinct account slot counts grouped by service_id
     const { data: cookies, error: cookieError } = await adminClient()
       .from("shared_session_cookies")
-      .select("service_id")
+      .select("service_id, account_slot")
       .eq("is_active", true)
       .gt("expires_at", new Date().toISOString());
 
     const countMap: Record<string, number> = {};
     if (!cookieError && cookies) {
+      const distinctSlots: Record<string, Set<number>> = {};
       for (const c of cookies) {
-        countMap[c.service_id] = (countMap[c.service_id] || 0) + 1;
+        if (!distinctSlots[c.service_id]) {
+          distinctSlots[c.service_id] = new Set<number>();
+        }
+        distinctSlots[c.service_id].add(c.account_slot ?? 1);
+      }
+      for (const sid in distinctSlots) {
+        countMap[sid] = distinctSlots[sid].size;
       }
     }
 

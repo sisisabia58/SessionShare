@@ -68,16 +68,37 @@ serve(async (req: Request) => {
   const serviceId = url.searchParams.get("service_id");
   if (!serviceId) return errRes(400, "BAD_REQUEST", "Missing service_id");
 
-  // Fetch cookie
-  const { data: rec, error: re } = await admin
+  // Parse account_slot from query string (default = 1)
+  const slotParam = url.searchParams.get("account_slot");
+  const accountSlot = slotParam ? parseInt(slotParam, 10) : 1;
+  const slotNum = isNaN(accountSlot) || accountSlot < 1 ? 1 : accountSlot;
+
+  // Fetch cookie for specific slot
+  let { data: rec, error: re } = await admin
     .from("shared_session_cookies")
     .select("encrypted_cookie_data, expires_at")
     .eq("service_id", serviceId)
     .eq("is_active", true)
+    .eq("account_slot", slotNum)
     .gt("expires_at", new Date().toISOString())
     .order("generated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+
+  // Graceful fallback: if requested slot not found or error, return the newest available cookie
+  if (!rec || re) {
+    const fallback = await admin
+      .from("shared_session_cookies")
+      .select("encrypted_cookie_data, expires_at")
+      .eq("service_id", serviceId)
+      .eq("is_active", true)
+      .gt("expires_at", new Date().toISOString())
+      .order("generated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    rec = fallback.data;
+    re = fallback.error;
+  }
 
   if (re) return errRes(500, "DATABASE_ERROR", "DB error");
   if (!rec) return errRes(404, "NOT_FOUND", "No active session cookie found");

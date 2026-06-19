@@ -39,6 +39,61 @@ const megaphoneButton = document.getElementById('megaphoneButton');
 // Target card currently interacted with via right click
 let contextCardId = null;
 
+// Account Picker elements
+const accountPickerOverlay = document.getElementById('accountPickerOverlay');
+const accountPickerClose   = document.getElementById('accountPickerClose');
+const accountPickerName    = document.getElementById('accountPickerName');
+const accountPickerCount   = document.getElementById('accountPickerCount');
+const accountPickerIcon    = document.getElementById('accountPickerIcon');
+const accountPickerList    = document.getElementById('accountPickerList');
+
+function showAccountPicker(service) {
+  accountPickerName.textContent = service.name;
+  accountPickerCount.textContent = `${service.cookie_count} accounts available`;
+  if (service.icon_url) {
+    accountPickerIcon.innerHTML = `<img src="${service.icon_url}" alt="${service.name}"
+      style="width:100%;height:100%;object-fit:cover;border-radius:10px;"
+      onerror="this.parentNode.textContent='${service.name[0]}'">`;
+    accountPickerIcon.style.background = '';
+    accountPickerIcon.style.color = '';
+  } else {
+    accountPickerIcon.textContent = service.name[0];
+    accountPickerIcon.style.background = '#4F46E5';
+    accountPickerIcon.style.color = '#fff';
+  }
+
+  accountPickerList.innerHTML = '';
+  for (let i = 1; i <= service.cookie_count; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'account-item';
+    btn.innerHTML = `
+      <div class="account-avatar">${i}</div>
+      <span class="account-item-label">Account ${i}</span>
+      <svg class="account-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>`;
+    btn.addEventListener('click', () => {
+      hideAccountPicker();
+      syncSessionCookie(service, i);  // pass real slot number (1-based)
+    });
+    accountPickerList.appendChild(btn);
+  }
+  accountPickerOverlay.classList.remove('hidden');
+}
+
+function hideAccountPicker() {
+  accountPickerOverlay.classList.add('hidden');
+}
+
+if (accountPickerClose) {
+  accountPickerClose.addEventListener('click', hideAccountPicker);
+}
+if (accountPickerOverlay) {
+  accountPickerOverlay.addEventListener('click', (e) => {
+    if (e.target === accountPickerOverlay) hideAccountPicker();
+  });
+}
+
 // Initial Setup
 document.addEventListener('DOMContentLoaded', async () => {
   showLoading(true);
@@ -142,15 +197,8 @@ themeToggle.addEventListener('click', async () => {
 });
 
 function updateThemeIcons(isLight) {
-  const sunIcon = themeToggle.querySelector('.theme-sun');
-  const moonIcon = themeToggle.querySelector('.theme-moon');
-  if (isLight) {
-    sunIcon.classList.remove('hidden');
-    moonIcon.classList.add('hidden');
-  } else {
-    sunIcon.classList.add('hidden');
-    moonIcon.classList.remove('hidden');
-  }
+  // CSS handles icon visibility via body.light-theme / body.dark-theme classes.
+  // No-op needed — leave empty for compatibility.
 }
 
 // Auth Actions
@@ -186,40 +234,35 @@ logoutButton.addEventListener('click', async () => {
 });
 
 const categoryDisplayMap = {
-  'All': 'All',
-  'A.I': '⚡ Productivity & AI Tools',
-  'Streaming': '🍿 Entertainment',
-  'Design': '🖼️ Visual Creation',
-  'Audio & Music': '🎧 Audio & Music',
-  'Learning': '📚 Learning',
-  'Essentials': '⚙️ Essentials',
-  'Pro Exclusive': '👑 Pro Exclusive',
-  'The Phantom Exclusive': '👻 The Phantom Exclusive'
+  'All':                   { emoji: '🔲', label: 'All' },
+  'A.I':                   { emoji: '⚡', label: 'Productivity & AI Tools' },
+  'Streaming':             { emoji: '🍿', label: 'Entertainment' },
+  'Design':                { emoji: '🖼️', label: 'Visual Creation' },
+  'Audio & Music':         { emoji: '🎧', label: 'Audio & Music' },
+  'Learning':              { emoji: '📗', label: 'Learning' },
+  'Essentials':            { emoji: '⚙️', label: 'Essentials' },
+  'Pro Exclusive':         { emoji: '👑', label: 'Pro Exclusive' },
+  'The Phantom Exclusive': { emoji: '👻', label: 'The Phantom Exclusive' },
 };
 
-function getCategoryDisplayName(cat) {
-  return categoryDisplayMap[cat] || cat;
-}
-
-// Render Category Filter Tags
 function renderFilters() {
-  const categories = new Set(['All']);
-  servicesData.forEach(s => {
-    if (s.category) categories.add(s.category);
-  });
+  const categorySlugs = new Set(['All']);
+  servicesData.forEach(s => { if (s.category) categorySlugs.add(s.category); });
 
   categoryFilters.innerHTML = '';
-  categories.forEach(cat => {
-    const filterTag = document.createElement('button');
-    filterTag.className = `filter-tag ${activeCategory === cat ? 'active' : ''}`;
-    filterTag.textContent = getCategoryDisplayName(cat);
-    filterTag.addEventListener('click', () => {
-      activeCategory = cat;
-      document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
-      filterTag.classList.add('active');
+  categorySlugs.forEach(slug => {
+    const meta = categoryDisplayMap[slug] || { emoji: '', label: slug };
+    const tag = document.createElement('button');
+    tag.className = `filter-tag ${activeCategory === slug ? 'active' : ''}`;
+    tag.dataset.slug = slug;
+    tag.innerHTML = `<span>${meta.emoji}</span><span>${meta.label}</span>`;
+    tag.addEventListener('click', () => {
+      activeCategory = slug;
+      document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+      tag.classList.add('active');
       renderListing();
     });
-    categoryFilters.appendChild(filterTag);
+    categoryFilters.appendChild(tag);
   });
 }
 
@@ -262,19 +305,14 @@ function renderListing() {
 function renderGrid(container, items) {
   container.innerHTML = '';
   if (items.length === 0) {
-    const placeholder = document.createElement('div');
-    placeholder.className = 'placeholder-text';
-    placeholder.textContent = 'No services found.';
-    placeholder.style.gridColumn = 'span 2';
-    placeholder.style.textAlign = 'center';
-    placeholder.style.padding = '24px';
-    placeholder.style.color = 'var(--text-muted)';
-    placeholder.style.fontSize = '12px';
-    container.appendChild(placeholder);
+    const ph = document.createElement('div');
+    ph.className = 'empty-state-text';
+    ph.textContent = 'No services found.';
+    container.appendChild(ph);
     return;
   }
 
-  items.forEach(item => {
+  items.forEach((item, index) => {
     const card = document.createElement('div');
     card.className = `card ${item.is_folder ? 'folder-card' : ''} ${pinnedCardIds.includes(item.id) ? 'pinned' : ''}`;
     card.dataset.id = item.id;
@@ -283,7 +321,6 @@ function renderGrid(container, items) {
     const iconWrapper = document.createElement('div');
     iconWrapper.className = 'icon-wrapper';
 
-    // Card icon (Image, folder symbol, or first letter as fallback)
     const icon = document.createElement('div');
     icon.className = 'card-icon';
     if (item.is_folder) {
@@ -293,23 +330,18 @@ function renderGrid(container, items) {
       img.src = item.icon_url;
       img.alt = item.name;
       img.className = 'service-logo';
-      img.onerror = () => {
-        img.style.display = 'none';
-        icon.textContent = item.name[0];
-      };
+      img.onerror = () => { img.style.display = 'none'; icon.textContent = item.name[0]; };
       icon.appendChild(img);
     } else {
       icon.textContent = item.name[0];
     }
     iconWrapper.appendChild(icon);
 
-    // Pin indicator icon inside iconWrapper
     const pinIndicator = document.createElement('div');
     pinIndicator.className = 'pin-indicator';
     pinIndicator.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="12" x2="12" y2="22"/><path d="M12 6c-3.31 0-6 2.69-6 6h12c0-3.31-2.69-6-6-6z"/></svg>`;
     iconWrapper.appendChild(pinIndicator);
 
-    // Cookie count badge
     if (!item.is_folder && item.cookie_count > 0) {
       const badge = document.createElement('div');
       badge.className = 'card-badge';
@@ -317,7 +349,6 @@ function renderGrid(container, items) {
       iconWrapper.appendChild(badge);
     }
 
-    // ChatGPT Plus banner
     if (!item.is_folder && item.name.toLowerCase() === 'chatgpt') {
       const banner = document.createElement('div');
       banner.className = 'card-plus-banner';
@@ -327,31 +358,29 @@ function renderGrid(container, items) {
 
     card.appendChild(iconWrapper);
 
-    // Card Title
     const title = document.createElement('div');
     title.className = 'card-title';
     title.textContent = item.name;
     card.appendChild(title);
 
-    // Event handlers
-    card.addEventListener('dblclick', () => {
-      if (item.is_folder) {
-        enterFolder(item.id, item.name);
-      }
-    });
-
+    card.addEventListener('dblclick', () => { if (item.is_folder) enterFolder(item.id, item.name); });
     card.addEventListener('click', () => {
       if (!item.is_folder) {
-        syncSessionCookie(item);
+        if (item.cookie_count > 1) {
+          showAccountPicker(item);
+        } else {
+          syncSessionCookie(item);
+        }
       }
     });
-
     card.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      if (!item.is_folder) {
-        openContextMenu(e, item.id);
-      }
+      if (!item.is_folder) openContextMenu(e, item.id);
     });
+
+    // Stagger animation
+    card.style.animationDelay = `${index * 30}ms`;
+    card.classList.add('animate-in');
 
     container.appendChild(card);
   });
@@ -425,11 +454,11 @@ searchInput.addEventListener('input', () => {
 });
 
 // Categories Accordion Toggle
-const categoriesHeader = document.getElementById('categoriesHeader');
-const categoriesAccordion = document.querySelector('.categories-accordion');
-if (categoriesHeader && categoriesAccordion) {
+const categoriesSection = document.getElementById('categoriesSection');
+const categoriesHeader  = document.getElementById('categoriesHeader');
+if (categoriesHeader && categoriesSection) {
   categoriesHeader.addEventListener('click', () => {
-    categoriesAccordion.classList.toggle('collapsed');
+    categoriesSection.classList.toggle('collapsed');
   });
 }
 
@@ -456,11 +485,12 @@ if (megaphoneButton) {
 }
 
 // Cookie Synchronization (Injection)
-async function syncSessionCookie(service) {
+async function syncSessionCookie(service, accountSlot = 1) {
   showLoading(true);
   try {
     const token = await getAccessToken();
-    const response = await fetch(`${SessionShareConfig.API_BASE}/service-cookie?service_id=${service.id}`, {
+    const slotQuery = accountSlot > 1 ? `&account_slot=${accountSlot}` : '';
+    const response = await fetch(`${SessionShareConfig.API_BASE}/service-cookie?service_id=${service.id}${slotQuery}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`

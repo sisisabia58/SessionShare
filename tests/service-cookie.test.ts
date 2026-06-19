@@ -46,3 +46,18 @@ Deno.test("full cookie rotation flow: encrypt, store, retrieve", async () => {
   assertEquals(parsed[0].value, "tok_admin_rotated");
   assertEquals(storedRecord.is_active, true);
 });
+
+Deno.test("account_slot query parameter parsing", () => {
+  const parseSlot = (urlStr: string): number => {
+    const url = new URL(urlStr);
+    const slotParam = url.searchParams.get("account_slot");
+    const accountSlot = slotParam ? parseInt(slotParam, 10) : 1;
+    return isNaN(accountSlot) || accountSlot < 1 ? 1 : accountSlot;
+  };
+
+  assertEquals(parseSlot("https://api.com/service-cookie?service_id=1"), 1);
+  assertEquals(parseSlot("https://api.com/service-cookie?service_id=1&account_slot=3"), 3);
+  assertEquals(parseSlot("https://api.com/service-cookie?service_id=1&account_slot=0"), 1);
+  assertEquals(parseSlot("https://api.com/service-cookie?service_id=1&account_slot=-5"), 1);
+  assertEquals(parseSlot("https://api.com/service-cookie?service_id=1&account_slot=abc"), 1);
+});
