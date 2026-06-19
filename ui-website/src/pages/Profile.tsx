@@ -1,10 +1,3 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, User, Camera, Save } from 'lucide-react';
-import { DashboardNavbar } from '../components/DashboardNavbar';
-import { Footer } from '../components/Footer';
-export function Profile() {
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
