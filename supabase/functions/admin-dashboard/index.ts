@@ -55,11 +55,45 @@ serve(async (req: Request) => {
     topServices.push(...logCounts.slice(0, 5));
   }
 
+  // Recent logs: last 10 access events with user email + service name
+  const { data: recentLogsData } = await adminClient
+    .from("cookie_access_logs")
+    .select(`id, action, created_at, users:user_id (email), services:service_id (name)`)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  const recentLogs = (recentLogsData ?? []).map((log: any) => ({
+    id: log.id,
+    action: log.action,
+    created_at: log.created_at,
+    user_email: log.users?.email ?? "unknown",
+    service_name: log.services?.name ?? "unknown",
+  }));
+
+  // Users by plan breakdown
+  const { data: allUsers } = await adminClient.from("users").select("plan");
+  const usersByPlan: Record<string, number> = { free: 0, basic: 0, premium: 0, premium_phantom: 0 };
+  for (const u of (allUsers ?? [])) {
+    const p = u.plan ?? "free";
+    usersByPlan[p] = (usersByPlan[p] ?? 0) + 1;
+  }
+
+  // Active subscriptions (non-free + premium_until in future)
+  const now = new Date().toISOString();
+  const { count: activeSubscriptions } = await adminClient
+    .from("users")
+    .select("id", { count: "exact", head: true })
+    .neq("plan", "free")
+    .gt("premium_until", now);
+
   return createJsonResponse({
     total_users: usersResult.count ?? 0,
     total_services: servicesResult.count ?? 0,
     total_access_logs_24h: logsResult.count ?? 0,
     active_cookies: activeCookiesResult.count ?? 0,
+    active_subscriptions: activeSubscriptions ?? 0,
     top_services: topServices,
+    recent_logs: recentLogs,
+    users_by_plan: usersByPlan,
   });
 });

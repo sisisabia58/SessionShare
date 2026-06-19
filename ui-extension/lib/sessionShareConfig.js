@@ -10,6 +10,9 @@ export const SessionShareConfig = {
   // API endpoints (Edge Functions)
   API_BASE: 'https://qohaalvaxkmtdpzdqahn.supabase.co/functions/v1',
 
+  // Website Frontend URL
+  WEBSITE_URL: 'http://localhost:5173',
+
   // Rate limit info (display to user)
   COOKIE_RATE_LIMIT: 10, // per minute
 };

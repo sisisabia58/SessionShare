@@ -23,20 +23,32 @@
         <h1 class="logo-text">SessionShare</h1>
         <p class="auth-subtitle">Unlock Premium Experiences Together</p>
       </div>
-      <form id="login-form">
-        <div class="input-group">
-          <label for="login-email">Email Address</label>
-          <input type="email" id="login-email" required placeholder="name@domain.com">
-        </div>
-        <div class="input-group">
-          <label for="login-password">Password</label>
-          <input type="password" id="login-password" required placeholder="••••••••">
-        </div>
-        <div id="auth-error" class="error-msg hidden"></div>
-        <button type="submit" class="btn btn-primary" id="login-btn">
-          <span>Sign In</span>
+      <div class="auth-body" style="text-align: center; margin-top: 20px;">
+        <p style="color: #a1a1aa; font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
+          Please log in through the SessionShare website to access the extension.
+        </p>
+        <button id="web-login-btn" class="btn btn-primary">
+          <span>Log In via Website</span>
         </button>
-      </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paywall Screen -->
+  <div id="paywall-container" class="container hidden">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1 class="logo-text">Premium Locked</h1>
+        <p class="auth-subtitle">Please activate premium plan</p>
+      </div>
+      <div class="paywall-body" style="text-align: center; margin-top: 20px;">
+        <p style="color: #a1a1aa; font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
+          An active Premium subscription is required to unlock access to the SessionShare extension.
+        </p>
+        <button id="activate-premium-btn" class="btn btn-primary">
+          <span>Activate Premium Plan</span>
+        </button>
+      </div>
     </div>
   </div>
 

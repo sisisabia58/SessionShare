@@ -41,6 +41,11 @@ export async function injectServiceCookies(serviceId) {
 
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
+    const errCode = errData.error?.code || '';
+    if (response.status === 402 || errCode === 'PREMIUM_REQUIRED') {
+      chrome.tabs.create({ url: `${SessionShareConfig.WEBSITE_URL}/order-premium` });
+      throw new Error('PREMIUM_REQUIRED');
+    }
     throw new Error(errData.message || `Failed to fetch service cookies (HTTP ${response.status})`);
   }
 

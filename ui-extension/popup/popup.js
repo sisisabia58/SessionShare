@@ -14,10 +14,9 @@ let pinnedCardIds = [];
 const loadingOverlay = document.getElementById('loading');
 const authContainer = document.getElementById('auth-container');
 const appContainer = document.getElementById('app-container');
-const loginForm = document.getElementById('login-form');
-const emailInput = document.getElementById('login-email');
-const passwordInput = document.getElementById('login-password');
-const authError = document.getElementById('auth-error');
+const paywallContainer = document.getElementById('paywall-container');
+const webLoginBtn = document.getElementById('web-login-btn');
+const activatePremiumBtn = document.getElementById('activate-premium-btn');
 const searchInput = document.getElementById('appSearch');
 const categoryFilters = document.getElementById('categoryFiltersContainer');
 const servicesContainer = document.getElementById('servicesContainer');
@@ -123,7 +122,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Check Auth State
   currentUser = await getCurrentUser();
   if (currentUser) {
-    await initApp();
+    chrome.runtime.sendMessage({ action: "checkPremiumStatus" }, (res) => {
+      showLoading(false);
+      if (res && res.isPremium) {
+        initApp();
+      } else {
+        showPaywallScreen(true);
+        chrome.tabs.create({ url: `${SessionShareConfig.WEBSITE_URL}/order-premium` });
+      }
+    });
   } else {
     showLoading(false);
     showAuthScreen(true);
@@ -133,12 +140,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 // App Initiation
 async function initApp() {
   showAuthScreen(false);
+  showPaywallScreen(false);
   showLoading(true);
 
   // Fetch Services list
   try {
     const token = await getAccessToken();
-    const response = await fetch(`${SessionShareConfig.API_BASE}/service`, {
+    const response = await fetch(`${SessionShareConfig.API_BASE}/services`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -146,6 +154,11 @@ async function initApp() {
     });
 
     if (!response.ok) {
+      if (response.status === 402) {
+        showLoading(false);
+        showPaywallScreen(true);
+        return;
+      }
       throw new Error(`HTTP error ${response.status}`);
     }
 
@@ -176,16 +189,27 @@ function showAuthScreen(show) {
   if (show) {
     authContainer.classList.remove('hidden');
     appContainer.classList.add('hidden');
+    showPaywallScreen(false);
   } else {
     authContainer.classList.add('hidden');
-    appContainer.classList.remove('hidden');
+  }
+}
+
+// Show/Hide Paywall Container
+function showPaywallScreen(show) {
+  if (show) {
+    paywallContainer.classList.remove('hidden');
+    authContainer.classList.add('hidden');
+    appContainer.classList.add('hidden');
+  } else {
+    paywallContainer.classList.add('hidden');
   }
 }
 
 // Display Auth Errors
 function showError(message) {
-  authError.textContent = message;
-  authError.classList.remove('hidden');
+  console.error("Auth error:", message);
+  alert(message);
 }
 
 // Theme management
@@ -201,24 +225,18 @@ function updateThemeIcons(isLight) {
   // No-op needed — leave empty for compatibility.
 }
 
-// Auth Actions
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  authError.classList.add('hidden');
-  showLoading(true);
+// Web Login & Activation Actions
+if (webLoginBtn) {
+  webLoginBtn.addEventListener('click', () => {
+    chrome.tabs.create({ url: `${SessionShareConfig.WEBSITE_URL}/login` });
+  });
+}
 
-  const email = emailInput.value;
-  const password = passwordInput.value;
-
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    showLoading(false);
-    showError(error.message);
-  } else {
-    currentUser = data.user;
-    await initApp();
-  }
-});
+if (activatePremiumBtn) {
+  activatePremiumBtn.addEventListener('click', () => {
+    chrome.tabs.create({ url: `${SessionShareConfig.WEBSITE_URL}/order-premium` });
+  });
+}
 
 logoutButton.addEventListener('click', async () => {
   showLoading(true);
@@ -498,7 +516,15 @@ async function syncSessionCookie(service, accountSlot = 1) {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
+      const errData = await response.json().catch(() => ({}));
+      const errCode = errData.error?.code || '';
+      if (response.status === 402 || errCode === 'PREMIUM_REQUIRED') {
+        showLoading(false);
+        showPaywallScreen(true);
+        chrome.tabs.create({ url: `${SessionShareConfig.WEBSITE_URL}/order-premium` });
+        return;
+      }
+      throw new Error(errData.message || `HTTP error ${response.status}`);
     }
 
     const data = await response.json();

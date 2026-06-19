@@ -117,8 +117,64 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
   return true;
 });
 
+// Helper to retrieve token from storage
+async function getSessionToken() {
+  const key = 'sb-qohaalvaxkmtdpzdqahn-auth-token';
+  const result = await chrome.storage.local.get(key);
+  const sessionStr = result[key];
+  if (!sessionStr) return null;
+  try {
+    const session = JSON.parse(sessionStr);
+    return session.access_token || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Fetch premium status from user-profile API
+async function checkPremiumStatus() {
+  const token = await getSessionToken();
+  if (!token) {
+    return { isPremium: false, plan: 'free', premium_until: null };
+  }
+
+  try {
+    const response = await fetch('https://qohaalvaxkmtdpzdqahn.supabase.co/functions/v1/user-profile', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      return { isPremium: false, plan: 'free', premium_until: null };
+    }
+
+    const data = await response.json();
+    const profile = data.profile;
+    if (!profile) {
+      return { isPremium: false, plan: 'free', premium_until: null };
+    }
+
+    const isPremium = (profile.plan !== 'free' && profile.premium_until && new Date(profile.premium_until) > new Date()) || profile.role === 'admin';
+
+    return {
+      isPremium,
+      plan: profile.plan || 'free',
+      premium_until: profile.premium_until || null
+    };
+  } catch (err) {
+    console.error("Failed to verify premium status:", err);
+    return { isPremium: false, plan: 'free', premium_until: null };
+  }
+}
+
 // Listener for popup messages (cookie sync & clearing)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "checkPremiumStatus") {
+    checkPremiumStatus().then(sendResponse);
+    return true; // Keep channel open for async response
+  }
+
   if (request.action === "clearCookiesv2") {
     const { domain, cookies } = request.payload;
     

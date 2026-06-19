@@ -112,5 +112,45 @@ serve(async (req: Request) => {
     return jsonRes({ service: svc }, 201);
   }
 
+  if (req.method === "PUT") {
+    if (user.role !== "admin") return errRes(403, "FORBIDDEN", "Admin only");
+
+    const url = new URL(req.url);
+    const id = url.searchParams.get("id");
+    if (!id) return errRes(400, "BAD_REQUEST", "Missing service id");
+
+    let body;
+    try { body = await req.json(); } catch { return errRes(400, "BAD_REQUEST", "Invalid JSON"); }
+
+    const { name, website_url, icon_url, category, folder_id, display_order, is_folder } = body;
+
+    const { data: svc, error } = await adminClient()
+      .from("services")
+      .update({ name, website_url, icon_url, category, folder_id, display_order, is_folder })
+      .eq("id", id)
+      .select("id, name, website_url, icon_url, category, folder_id, display_order, is_folder")
+      .single();
+
+    if (error) return errRes(500, "DATABASE_ERROR", "Failed to update service");
+    if (!svc) return errRes(404, "NOT_FOUND", "Service not found");
+    return jsonRes({ service: svc });
+  }
+
+  if (req.method === "DELETE") {
+    if (user.role !== "admin") return errRes(403, "FORBIDDEN", "Admin only");
+
+    const url = new URL(req.url);
+    const id = url.searchParams.get("id");
+    if (!id) return errRes(400, "BAD_REQUEST", "Missing service id");
+
+    const { error } = await adminClient()
+      .from("services")
+      .delete()
+      .eq("id", id);
+
+    if (error) return errRes(500, "DATABASE_ERROR", "Failed to delete service");
+    return jsonRes({ success: true });
+  }
+
   return errRes(405, "METHOD_NOT_ALLOWED", "Method not allowed");
 });

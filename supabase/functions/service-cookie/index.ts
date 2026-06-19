@@ -60,8 +60,18 @@ serve(async (req: Request) => {
   if (ue || !user) return errRes(401, "UNAUTHORIZED", "Invalid token");
 
   const admin = adminClient();
-  const { data: profile } = await admin.from("users").select("role").eq("id", user.id).single();
+  const { data: profile } = await admin.from("users").select("role, plan, premium_until").eq("id", user.id).single();
   if (!profile) return errRes(500, "INTERNAL_ERROR", "No profile");
+
+  // ── Premium plan check ────────────────────────────────────────
+  const isPremium =
+    profile.plan !== "free" &&
+    profile.premium_until != null &&
+    new Date(profile.premium_until) > new Date();
+
+  if (!isPremium) {
+    return errRes(402, "PREMIUM_REQUIRED", "An active premium plan is required to access session cookies.");
+  }
 
   // Get service_id
   const url = new URL(req.url);
