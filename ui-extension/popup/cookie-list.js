@@ -521,7 +521,7 @@ import { getSupabase, initSupabase, getCurrentUser } from '../lib/supabaseClient
           window.open(
             browserDetector
               .getApi()
-              .runtime.getURL('interface/options/options.html')
+              .runtime.getURL('ui-extension/options/options.html')
           );
         }
       });

@@ -17,11 +17,11 @@
 			"48": "icons/cookie-48-filled.png"
 		},
 		"default_title": "Cookie-Editor",
-		"default_popup": "interface/popup/cookie-list.html"
+		"default_popup": "ui-extension/popup/cookie-list.html"
 	},
-	"devtools_page": "interface/devtools/devtool.html",
+	"devtools_page": "ui-extension/devtools/devtool.html",
 	"options_ui": {
-		"page": "interface/options/options.html"
+		"page": "ui-extension/options/options.html"
 	},
 	"permissions": [
 		"cookies",

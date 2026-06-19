@@ -7,7 +7,7 @@
 function injectScript() {
   try {
     const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('interface/content/sessionshare.js');
+    script.src = chrome.runtime.getURL('ui-extension/content/sessionshare.js');
     script.type = 'text/javascript';
     script.onload = () => script.remove();
     (document.head || document.documentElement).appendChild(script);

@@ -1,5 +1,5 @@
 /**
- * interface/devtools/permissionHandler.js needs to be kept in sync to the functions in this file
+ * ui-extension/devtools/permissionHandler.js needs to be kept in sync to the functions in this file
  */
 export class PermissionHandler {
   /**

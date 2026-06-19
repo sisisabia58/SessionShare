@@ -6,9 +6,9 @@
 	"description": "Simple yet powerful Cookie Editor that allow you to quickly create, edit and delete cookies without leaving your tab.",
 	"background": {
 		"scripts": [
-			"interface/lib/env.js",
-			"interface/lib/browserDetector.js",
-			"interface/lib/permissionHandler.js",
+			"ui-extension/lib/env.js",
+			"ui-extension/lib/browserDetector.js",
+			"ui-extension/lib/permissionHandler.js",
 			"cookie-editor.js"
 		],
 		"type": "module"
@@ -38,7 +38,7 @@
 			}
 		],
 		"default_title": "Cookie-Editor",
-		"default_popup": "interface/popup/cookie-list.html"
+		"default_popup": "ui-extension/popup/cookie-list.html"
 	},
 	"sidebar_action": {
 		"default_icon": {
@@ -46,11 +46,11 @@
 			"32": "icons/cookie-filled-small.svg"
 		},
 		"default_title": "Cookie-Editor",
-		"default_panel": "interface/sidepanel/cookie-list.html"
+		"default_panel": "ui-extension/sidepanel/cookie-list.html"
 	},
-	"devtools_page": "interface/devtools/devtool.html",
+	"devtools_page": "ui-extension/devtools/devtool.html",
 	"options_ui": {
-		"page": "interface/options/options.html"
+		"page": "ui-extension/options/options.html"
 	},
 	"permissions": [
 		"cookies",

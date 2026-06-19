@@ -18,7 +18,7 @@
       "48": "icons/cookie-48-filled.png"
     },
     "default_title": "SessionShare Extension",
-    "default_popup": "interface/popup/popup.html"
+    "default_popup": "ui-extension/popup/popup.html"
   },
   "permissions": [
     "cookies",
@@ -51,7 +51,7 @@
         "*://*.writehuman.ai/*"
       ],
       "js": [
-        "interface/content/sessionshare-modifyer.js"
+        "ui-extension/content/sessionshare-modifyer.js"
       ],
       "run_at": "document_end"
     }
@@ -59,7 +59,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "interface/content/sessionshare.js"
+        "ui-extension/content/sessionshare.js"
       ],
       "matches": [
         "*://*.chatgpt.com/*"

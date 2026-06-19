@@ -72,7 +72,7 @@ module.exports = function (grunt) {
           },
           {
             expand: true,
-            src: ['interface/**'],
+            src: ['ui-extension/**'],
             dest: 'build/<%= grunt.task.current.target %>/',
           },
           {
@@ -101,7 +101,7 @@ module.exports = function (grunt) {
           },
           {
             expand: true,
-            src: ['interface/**'],
+            src: ['ui-extension/**'],
             dest: 'build/<%= grunt.task.current.target %>/',
           },
           {
@@ -130,7 +130,7 @@ module.exports = function (grunt) {
           },
           {
             expand: true,
-            src: ['interface/**'],
+            src: ['ui-extension/**'],
             dest: 'build/<%= grunt.task.current.target %>/',
           },
           {
@@ -159,7 +159,7 @@ module.exports = function (grunt) {
           },
           {
             expand: true,
-            src: ['interface/**'],
+            src: ['ui-extension/**'],
             dest: 'build/<%= grunt.task.current.target %>/',
           },
           {
@@ -188,7 +188,7 @@ module.exports = function (grunt) {
           },
           {
             expand: true,
-            src: ['interface/**'],
+            src: ['ui-extension/**'],
             dest: 'build/<%= grunt.task.current.target %>/',
           },
           {
@@ -222,8 +222,8 @@ module.exports = function (grunt) {
           {
             expand: true,
             flatten: true,
-            src: ['interface/lib/env.js'],
-            dest: 'build/<%= grunt.task.current.target %>/interface/lib/',
+            src: ['ui-extension/lib/env.js'],
+            dest: 'build/<%= grunt.task.current.target %>/ui-extension/lib/',
           },
         ],
       },
@@ -232,8 +232,8 @@ module.exports = function (grunt) {
           {
             expand: true,
             flatten: true,
-            src: ['interface/lib/env.js'],
-            dest: 'build/<%= grunt.task.current.target %>/interface/lib/',
+            src: ['ui-extension/lib/env.js'],
+            dest: 'build/<%= grunt.task.current.target %>/ui-extension/lib/',
           },
         ],
       },
@@ -242,8 +242,8 @@ module.exports = function (grunt) {
           {
             expand: true,
             flatten: true,
-            src: ['interface/lib/env.js'],
-            dest: 'build/<%= grunt.task.current.target %>/interface/lib/',
+            src: ['ui-extension/lib/env.js'],
+            dest: 'build/<%= grunt.task.current.target %>/ui-extension/lib/',
           },
         ],
       },
@@ -252,8 +252,8 @@ module.exports = function (grunt) {
           {
             expand: true,
             flatten: true,
-            src: ['interface/lib/env.js'],
-            dest: 'build/<%= grunt.task.current.target %>/interface/lib/',
+            src: ['ui-extension/lib/env.js'],
+            dest: 'build/<%= grunt.task.current.target %>/ui-extension/lib/',
           },
         ],
       },
@@ -262,8 +262,8 @@ module.exports = function (grunt) {
           {
             expand: true,
             flatten: true,
-            src: ['interface/lib/env.js'],
-            dest: 'build/<%= grunt.task.current.target %>/interface/lib/',
+            src: ['ui-extension/lib/env.js'],
+            dest: 'build/<%= grunt.task.current.target %>/ui-extension/lib/',
           },
         ],
       },
