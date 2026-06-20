@@ -14,6 +14,9 @@ import { OrderPremium } from './pages/OrderPremium';
 import { Admin } from './pages/Admin';
 import { Cart } from './pages/Cart';
 import { Payment } from './pages/Payment';
+import { Signup } from './pages/Signup';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 
 export function App() {
   useScreenInit();
@@ -26,6 +29,9 @@ export function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Protected user routes */}
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
