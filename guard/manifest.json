@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "SessionShare Guard",
+  "version": "1.0.4",
+  "description": "SessionShare Guard Companion Extension.",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "cookies",
+    "tabs",
+    "management",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "icons": {
+    "128": "icon-128.png"
+  }
+}

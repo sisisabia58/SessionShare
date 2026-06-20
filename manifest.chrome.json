@@ -54,6 +54,16 @@
         "ui-extension/content/sessionshare-modifyer.js"
       ],
       "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "*://sessionshare-production.up.railway.app/*",
+        "*://localhost/*"
+      ],
+      "js": [
+        "ui-extension/content/sessionshare-auth-sync.js"
+      ],
+      "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [

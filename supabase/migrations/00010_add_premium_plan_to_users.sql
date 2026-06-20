@@ -13,10 +13,12 @@ CREATE INDEX IF NOT EXISTS idx_users_premium_until ON public.users (premium_unti
 -- ── RLS Policies ──────────────────────────────────────────────────
 
 -- Allow authenticated users to read their own plan status
-CREATE POLICY IF NOT EXISTS "users_read_own_plan"
+DROP POLICY IF EXISTS "users_read_own_plan" ON public.users;
+CREATE POLICY "users_read_own_plan"
   ON public.users
   FOR SELECT
   USING (auth.uid() = id);
+
 
 -- Allow service_role (used by Edge Functions) to update plan/premium_until
 -- This is handled via the admin client (service_role key), which bypasses RLS.

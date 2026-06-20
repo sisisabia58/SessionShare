@@ -170,6 +170,20 @@ async function checkPremiumStatus() {
 
 // Listener for popup messages (cookie sync & clearing)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "syncSessionToken") {
+    const key = 'sb-qohaalvaxkmtdpzdqahn-auth-token';
+    if (request.token) {
+      chrome.storage.local.set({ [key]: request.token }, () => {
+        sendResponse({ success: true, action: "set" });
+      });
+    } else {
+      chrome.storage.local.remove(key, () => {
+        sendResponse({ success: true, action: "remove" });
+      });
+    }
+    return true; // Keep channel open for async response
+  }
+
   if (request.action === "checkPremiumStatus") {
     checkPremiumStatus().then(sendResponse);
     return true; // Keep channel open for async response
