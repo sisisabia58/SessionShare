@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -16,6 +16,7 @@ import {
   ExternalLink } from
 'lucide-react';
 import { Logo } from '../Logo';
+import { useAuth } from '../../context/AuthContext';
 interface AdminLayoutProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
@@ -59,6 +60,13 @@ export function AdminLayout({
   children
 }: AdminLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login', { replace: true });
+  };
   const activeItem = navItems.find((item) => item.id === activeSection);
   const SidebarContent = () =>
   <div className="flex flex-col h-full">
@@ -101,13 +109,12 @@ export function AdminLayout({
           <ExternalLink className="w-5 h-5 text-zinc-500" />
           Back to site
         </Link>
-        <Link
-        to="/"
-        className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-400/10 transition-all">
-        
+        <button
+        onClick={handleLogout}
+        className="flex w-full items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-400/10 transition-all">
           <LogOut className="w-5 h-5" />
           Log out
-        </Link>
+        </button>
       </div>
     </div>;
 

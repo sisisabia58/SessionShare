@@ -1,8 +1,16 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, LogOut, Globe } from 'lucide-react';
 import { Logo } from './Logo';
+import { useAuth } from '../context/AuthContext';
 export function DashboardNavbar() {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login', { replace: true });
+  };
   return (
     <header className="sticky top-0 z-40 glass-nav py-4 border-b border-white/10">
       <div className="max-w-4xl mx-auto px-6 flex items-center justify-between">
@@ -28,12 +36,12 @@ export function DashboardNavbar() {
             <button className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-colors">
               <User className="w-4 h-4" />
             </button>
-            <Link
-              to="/"
+            <button
+              onClick={handleLogout}
+              aria-label="Log out"
               className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-red-400 hover:bg-red-400/10 transition-colors">
-              
               <LogOut className="w-4 h-4" />
-            </Link>
+            </button>
           </div>
         </div>
       </div>
