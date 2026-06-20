@@ -58,6 +58,8 @@
     {
       "matches": [
         "*://sessionshare-production.up.railway.app/*",
+        "*://sessionshare.web.id/*",
+        "*://www.sessionshare.web.id/*",
         "*://localhost/*"
       ],
       "js": [

@@ -11,7 +11,7 @@ export const SessionShareConfig = {
   API_BASE: 'https://qohaalvaxkmtdpzdqahn.supabase.co/functions/v1',
 
   // Website Frontend URL
-  WEBSITE_URL: 'https://sessionshare-production.up.railway.app',
+  WEBSITE_URL: 'https://sessionshare.web.id',
 
   // Rate limit info (display to user)
   COOKIE_RATE_LIMIT: 10, // per minute
