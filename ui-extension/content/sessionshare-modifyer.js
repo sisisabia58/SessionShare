@@ -57,9 +57,9 @@ function sanitizeDOM() {
     const avatars = document.querySelectorAll('img[src*="avatar"], div[class*="avatar"]');
     avatars.forEach(avatar => {
       if (avatar.tagName === 'IMG') {
-        avatar.src = 'https://groupy.id/assets/images/logo/display.png';
+        avatar.src = 'https://www.sessionshare.web.id/logo.png';
       } else {
-        avatar.style.backgroundImage = 'url(https://groupy.id/assets/images/logo/display.png)';
+        avatar.style.backgroundImage = 'url(https://www.sessionshare.web.id/logo.png)';
         avatar.style.backgroundSize = 'cover';
       }
     });
