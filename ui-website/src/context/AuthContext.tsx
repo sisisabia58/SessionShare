@@ -101,7 +101,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await supabase.auth.signOut();
     } catch {
-      // Network error — clear local state anyway
+      // Network failed — force clear all local auth state manually
+      setUser(null);
+      setSession(null);
     }
     setProfile(null);
   }, []);
