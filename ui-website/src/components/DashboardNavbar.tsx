@@ -8,7 +8,11 @@ export function DashboardNavbar() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await signOut();
+    try {
+      await signOut();
+    } catch {
+      // swallow — signOut already handles errors internally
+    }
     navigate('/login', { replace: true });
   };
   return (
