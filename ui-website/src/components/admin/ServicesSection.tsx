@@ -513,6 +513,12 @@ function AccountsManager({ service, onClose }: { service: Service; onClose: () =
       return;
     }
     try {
+      JSON.parse(newCookie);
+    } catch (e) {
+      showToast('error', 'Invalid cookie format. Cookies must be a valid JSON array.');
+      return;
+    }
+    try {
       await adminApi.createCookie({
         service_id: service.id,
         account_slot: accountSlot,
@@ -529,6 +535,14 @@ function AccountsManager({ service, onClose }: { service: Service; onClose: () =
   };
 
   const handleSaveCookieEdit = async (id: string) => {
+    if (editCookie.trim()) {
+      try {
+        JSON.parse(editCookie);
+      } catch (e) {
+        showToast('error', 'Invalid cookie format. Cookies must be a valid JSON array.');
+        return;
+      }
+    }
     try {
       await adminApi.updateCookie(id, {
         cookie_data: editCookie ? editCookie : undefined,
@@ -673,13 +687,13 @@ function AccountsManager({ service, onClose }: { service: Service; onClose: () =
                         <>
                           <div>
                             <label className="block text-[10px] text-zinc-500 font-medium mb-1">
-                              New Netscape Cookie Data (leave blank to keep current)
+                              New JSON Cookie Data (leave blank to keep current)
                             </label>
                             <textarea
                               rows={3}
                               value={editCookie}
                               onChange={(e) => setEditCookie(e.target.value)}
-                              placeholder="# Netscape HTTP Cookie File..."
+                              placeholder='[{"name": "cookie_name", "value": "..."}]'
                               className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white font-mono text-xs focus:outline-none focus:border-lime-400/50 resize-none"
                             />
                           </div>
@@ -743,13 +757,13 @@ function AccountsManager({ service, onClose }: { service: Service; onClose: () =
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1.5">Netscape Cookie Content</label>
+                <label className="block text-xs font-medium text-zinc-300 mb-1.5">JSON Cookie Content</label>
                 <textarea
                   rows={4}
                   required
                   value={newCookie}
                   onChange={(e) => setNewCookie(e.target.value)}
-                  placeholder="# Netscape HTTP Cookie File..."
+                  placeholder='[{"name": "cookie_name", "value": "..."}]'
                   className="w-full bg-black/40 border border-white/10 rounded-lg p-3 text-white font-mono text-xs focus:outline-none focus:border-lime-400/50 resize-none"
                 />
               </div>
