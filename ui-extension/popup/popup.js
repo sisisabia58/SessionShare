@@ -168,6 +168,7 @@ async function initApp() {
     renderFilters();
     renderListing();
     showLoading(false);
+    appContainer.classList.remove('hidden');
   } catch (err) {
     console.error("Failed to load services:", err);
     showLoading(false);
