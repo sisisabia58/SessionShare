@@ -1,17 +1,11 @@
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
-import { DashboardNavbar } from '../components/DashboardNavbar';
-import { Footer } from '../components/Footer';
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, AlertCircle, FlaskConical } from 'lucide-react';
 import { DashboardNavbar } from '../components/DashboardNavbar';
 import { Footer } from '../components/Footer';
 import { QRCodeCanvas } from 'qrcode.react';
-import { userApi } from '../lib/api';
+import { userApi, paymentApi } from '../lib/api';
 import { useToast } from '../components/ui/Toast';
 
 export function Payment() {
@@ -28,8 +22,12 @@ export function Payment() {
 
   const [timeLeft, setTimeLeft] = useState<string>('');
   const [isExpired, setIsExpired] = useState<boolean>(false);
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const pollTimerRef = useRef<ReturnType<typeof setInterval>>();
   const countTimerRef = useRef<ReturnType<typeof setInterval>>();
+
+  // Detect sandbox mode: Pakasir returns a fixed placeholder QR string in sandbox
+  const isSandbox = qrString?.startsWith('THIS.IS.JUST.AN.EXAMPLE');
 
   useEffect(() => {
     if (!orderId || !qrString || !expiredAtStr) {
@@ -208,10 +206,31 @@ export function Payment() {
 
               {/* Actions */}
               <div className="space-y-4 pt-4">
+                {/* Sandbox simulate button — only visible when using Pakasir sandbox */}
+                {isSandbox && !isExpired && (
+                  <button
+                    onClick={async () => {
+                      setIsSimulating(true);
+                      try {
+                        await paymentApi.simulatePayment(orderId);
+                        showToast('success', 'Payment simulated! Waiting for webhook...');
+                      } catch (err: any) {
+                        showToast('error', err?.message ?? 'Simulation failed');
+                      } finally {
+                        setIsSimulating(false);
+                      }
+                    }}
+                    disabled={isSimulating}
+                    className="w-full flex items-center justify-center gap-2 py-4 rounded-full bg-amber-400/10 border border-amber-400/40 text-amber-300 font-bold hover:bg-amber-400/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <FlaskConical className="w-4 h-4" />
+                    {isSimulating ? 'Simulating...' : '🧪 Simulate Payment (Sandbox)'}
+                  </button>
+                )}
+
                 <Link
                   to="/order-premium"
                   className="w-full flex items-center justify-center py-4 rounded-full border border-white/10 text-zinc-400 font-medium hover:bg-white/5 hover:text-white transition-colors">
-                  
                   Cancel Payment
                 </Link>
               </div>

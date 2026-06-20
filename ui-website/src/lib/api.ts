@@ -110,6 +110,12 @@ export const paymentApi = {
     total_days: number;
     amount: number;
   }) => apiFetch<CreateOrderResponse>('/pakasir-create', { method: 'POST', body: JSON.stringify(data) }),
+
+  simulatePayment: (orderId: string) =>
+    apiFetch<{ simulated: boolean; message: string }>('/pakasir-simulate', {
+      method: 'POST',
+      body: JSON.stringify({ order_id: orderId }),
+    }),
 };
 
 // ── Services API ──────────────────────────────────────────────────
