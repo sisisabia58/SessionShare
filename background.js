@@ -107,6 +107,23 @@ function verifySessionShareGuard() {
 }
 
 // Handshake listener for external messages from SessionShare Guard & Admin Dashboard cookie capture
+// Heuristic to extract base/apex domain from a hostname (e.g., www.duolingo.com -> duolingo.com)
+function getBaseDomain(domain) {
+  const cleanDomain = domain.startsWith('.') ? domain.substring(1) : domain;
+  const parts = cleanDomain.split('.');
+  if (parts.length <= 2) return cleanDomain;
+
+  const last = parts[parts.length - 1];
+  const secondLast = parts[parts.length - 2];
+  const commonTLDs = ['com', 'co', 'net', 'org', 'web', 'go', 'or', 'ac'];
+
+  if (commonTLDs.includes(secondLast) && parts.length >= 3) {
+    return parts.slice(-3).join('.');
+  }
+  return parts.slice(-2).join('.');
+}
+
+// Handshake listener for external messages from SessionShare Guard & Admin Dashboard cookie capture
 chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
   console.log("External message received:", message);
 
@@ -131,11 +148,10 @@ chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => 
       return true;
     }
 
-    // Clean domain formatting (e.g. '.netflix.com' or 'netflix.com')
-    const cleanDomain = domain.startsWith('.') ? domain.substring(1) : domain;
+    const baseDomain = getBaseDomain(domain);
 
     // Capture cookies for domain and subdomains
-    chrome.cookies.getAll({ domain: cleanDomain }, (cookies) => {
+    chrome.cookies.getAll({ domain: baseDomain }, (cookies) => {
       if (chrome.runtime.lastError) {
         sendResponse({ success: false, error: chrome.runtime.lastError.message });
       } else {
