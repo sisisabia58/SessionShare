@@ -78,5 +78,12 @@
       ]
     }
   ],
+  "externally_connectable": {
+    "matches": [
+      "http://localhost/*",
+      "https://sessionshare.web.id/*",
+      "https://www.sessionshare.web.id/*"
+    ]
+  },
   "incognito": "split"
 }

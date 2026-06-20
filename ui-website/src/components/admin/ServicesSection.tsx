@@ -491,6 +491,58 @@ function AccountsManager({ service, onClose }: { service: Service; onClose: () =
 
   const { showToast } = useToast();
 
+  const [extensionId, setExtensionId] = useState(() => {
+    return localStorage.getItem('sessionshare_extension_id') || 'hlkenndednhfkekhgcdicdfddnkalmdm';
+  });
+  const [isCapturing, setIsCapturing] = useState(false);
+
+  const handleAutoCapture = async (serviceUrl: string, onCaptured: (cookiesStr: string) => void) => {
+    if (!extensionId.trim()) {
+      showToast('error', 'Please configure the Chrome Extension ID in the header first.');
+      return;
+    }
+    setIsCapturing(true);
+    try {
+      const url = new URL(serviceUrl);
+      const targetDomain = url.hostname;
+
+      // @ts-ignore
+      const chromeRuntime = window.chrome && window.chrome.runtime;
+      if (!chromeRuntime || !chromeRuntime.sendMessage) {
+        showToast('error', 'Chrome Extension API not detected. Make sure you are using a Chromium browser.');
+        setIsCapturing(false);
+        return;
+      }
+
+      // @ts-ignore
+      window.chrome.runtime.sendMessage(
+        extensionId,
+        {
+          action: 'captureTabCookies',
+          payload: { domain: targetDomain }
+        },
+        (response: any) => {
+          setIsCapturing(false);
+          // @ts-ignore
+          if (window.chrome.runtime.lastError) {
+            // @ts-ignore
+            showToast('error', `Could not connect to Extension: ${window.chrome.runtime.lastError.message}`);
+            return;
+          }
+          if (response && response.success) {
+            onCaptured(JSON.stringify(response.cookies, null, 2));
+            showToast('success', `Captured ${response.cookies.length} cookies from your browser session.`);
+          } else {
+            showToast('error', response?.error || 'Failed to capture cookies.');
+          }
+        }
+      );
+    } catch (err: any) {
+      setIsCapturing(false);
+      showToast('error', `URL validation failed: ${err.message}`);
+    }
+  };
+
   const loadCookies = async () => {
     setLoading(true);
     try {
@@ -598,17 +650,27 @@ function AccountsManager({ service, onClose }: { service: Service; onClose: () =
                 service.name.charAt(0).toUpperCase()
               )}
             </div>
-            <div>
+             <div>
               <h2 className="text-xl font-bold leading-tight">{service.name}</h2>
-              <p className="text-sm text-zinc-400">
-                <span className="text-white font-semibold">{totalSlots}</span> slots total
-                {totalSlots > 0 && (
-                  <>
-                    {' · '}
-                    <span className="text-lime-400">{activeSlots} active</span>
-                  </>
-                )}
-              </p>
+              <div className="flex items-center gap-2 mt-0.5 text-xs text-zinc-500">
+                <span>{totalSlots} slots</span>
+                <span>·</span>
+                <span className="text-lime-400">{activeSlots} active</span>
+                <span>·</span>
+                <div className="flex items-center gap-1">
+                  <span>Ext ID:</span>
+                  <input
+                    type="text"
+                    value={extensionId}
+                    onChange={(e) => {
+                      setExtensionId(e.target.value);
+                      localStorage.setItem('sessionshare_extension_id', e.target.value);
+                    }}
+                    className="bg-transparent border-b border-white/10 text-zinc-400 focus:outline-none focus:border-lime-400 w-24 text-[10px] font-mono py-0"
+                    title="Chrome Extension ID for Auto-Capture"
+                  />
+                </div>
+              </div>
             </div>
           </div>
           <button onClick={onClose} className="text-zinc-400 hover:text-white">
@@ -686,9 +748,19 @@ function AccountsManager({ service, onClose }: { service: Service; onClose: () =
                       {isEditing ? (
                         <>
                           <div>
-                            <label className="block text-[10px] text-zinc-500 font-medium mb-1">
-                              New JSON Cookie Data (leave blank to keep current)
-                            </label>
+                            <div className="flex justify-between items-center mb-1">
+                              <label className="block text-[10px] text-zinc-500 font-medium">
+                                New JSON Cookie Data (leave blank to keep current)
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => handleAutoCapture(service.website_url, setEditCookie)}
+                                disabled={isCapturing}
+                                className="text-[9px] font-bold text-lime-400 hover:text-lime-500 transition-colors flex items-center gap-1 bg-lime-400/10 hover:bg-lime-400/20 px-1.5 py-0.5 rounded border border-lime-400/20 disabled:opacity-40"
+                              >
+                                {isCapturing ? 'Capturing...' : '⚡ Auto-Capture'}
+                              </button>
+                            </div>
                             <textarea
                               rows={3}
                               value={editCookie}
@@ -757,7 +829,17 @@ function AccountsManager({ service, onClose }: { service: Service; onClose: () =
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1.5">JSON Cookie Content</label>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-xs font-medium text-zinc-300">JSON Cookie Content</label>
+                  <button
+                    type="button"
+                    onClick={() => handleAutoCapture(service.website_url, setNewCookie)}
+                    disabled={isCapturing}
+                    className="text-[10px] font-bold text-lime-400 hover:text-lime-500 transition-colors flex items-center gap-1 bg-lime-400/10 hover:bg-lime-400/20 px-2 py-1 rounded border border-lime-400/20 disabled:opacity-40"
+                  >
+                    {isCapturing ? 'Capturing...' : '⚡ Auto-Capture from Browser'}
+                  </button>
+                </div>
                 <textarea
                   rows={4}
                   required

