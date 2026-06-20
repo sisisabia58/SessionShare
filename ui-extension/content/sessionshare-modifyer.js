@@ -17,67 +17,88 @@ function injectScript() {
   }
 }
 
-// UI Sanitization Loop (Scrubbing settings, upgrade buttons, billing links)
+// UI Sanitization Loop (Global scrubbing of settings, logout, upgrade buttons, billing links)
 function sanitizeDOM() {
   const host = window.location.hostname;
 
+  // ─── LAYER 2A: Global selector-based hiding ───────────────────────────────
+  // Hides anchor elements pointing to known dangerous paths on ANY website.
+  const globalSelectors = [
+    'a[href*="/logout"]',
+    'a[href*="/signout"]',
+    'a[href*="/sign-out"]',
+    'a[href*="/settings"]',
+    'a[href*="/account/settings"]',
+    'a[href*="/billing"]',
+    'a[href*="/subscription"]',
+    'a[href*="/manage-subscription"]',
+    'a[href*="/pricing"]',
+    'a[href*="/vip"]',
+    'a[href*="/upgrade"]',
+    'a[href*="/checkout"]',
+    'a[href*="/EditProfiles"]',
+    'a[href*="/ManageProfiles"]',
+    'a[href*="/YourAccount"]',
+  ];
+  globalSelectors.forEach(sel => {
+    document.querySelectorAll(sel).forEach(el => {
+      el.style.display = 'none';
+      el.style.pointerEvents = 'none';
+    });
+  });
+
+  // ─── LAYER 2B: Global text-based menu item hiding ─────────────────────────
+  // Hides interactive elements whose visible text exactly matches known logout/settings labels.
+  // Uses exact-match to avoid hiding unrelated elements (e.g. a button labelled "Settings & Tips").
+  const blockedLabels = [
+    'sign out', 'signout', 'log out', 'logout',
+    'settings', 'account settings',
+    'subscription', 'manage subscription', 'manage plan',
+    'billing', 'payment',
+    'upgrade', 'upgrade plan', 'upgrade to pro',
+    'go pro', 'get pro', 'join pro', 'vip', 'join vip',
+    'manage account', 'account & billing',
+  ];
+  document.querySelectorAll('a, button, [role="menuitem"], li, span, div').forEach(el => {
+    // Only inspect leaf-like elements (avoids nuking entire nav sections)
+    if (el.children.length <= 2) {
+      const text = el.textContent.toLowerCase().trim();
+      if (blockedLabels.includes(text)) {
+        el.style.display = 'none';
+        el.style.pointerEvents = 'none';
+      }
+    }
+  });
+
+  // ─── LAYER 2C: Site-specific overrides ────────────────────────────────────
+
   if (host.includes('chatgpt.com')) {
-    // 1. Hide Upgrade Buttons / Prompts
-    const upgradeSelectors = [
-      'a[href*="/pricing"]',
-      'a[href*="/checkout"]',
+    // Hide upgrade prompts by CSS class patterns (these don't rely on href)
+    const chatgptUpgradeSelectors = [
       'div[class*="upgrade"]',
       'button[class*="upgrade"]',
       '.bg-token-main-surface-secondary button',
       'div[class*="Get Plus"]',
-      'div[class*="Get Team"]'
-    ];
-    upgradeSelectors.forEach(sel => {
-      document.querySelectorAll(sel).forEach(el => {
-        el.style.display = 'none';
-      });
-    });
-
-    // 2. Hide User profile settings & Deletion elements
-    const settingsSelectors = [
-      'div[role="menuitem"]:has(a[href*="/settings"])',
+      'div[class*="Get Team"]',
       'div[class*="delete-chat-menu-item"]',
       'button[class*="delete-conversation"]',
       'button[class*="delete-all-chats"]',
       'button[class*="archive-all-chats"]',
-      'div[role="menuitem"]:has(svg path[d*="M12"])' // matches settings icon paths sometimes
     ];
-    settingsSelectors.forEach(sel => {
+    chatgptUpgradeSelectors.forEach(sel => {
       document.querySelectorAll(sel).forEach(el => {
         el.style.display = 'none';
       });
     });
 
-    // 3. Replace User Profile Avatar with Brand Display Logo
-    const avatars = document.querySelectorAll('img[src*="avatar"], div[class*="avatar"]');
-    avatars.forEach(avatar => {
+    // Replace User Profile Avatar with SessionShare brand logo
+    document.querySelectorAll('img[src*="avatar"], div[class*="avatar"]').forEach(avatar => {
       if (avatar.tagName === 'IMG') {
         avatar.src = 'https://www.sessionshare.web.id/logo.png';
       } else {
         avatar.style.backgroundImage = 'url(https://www.sessionshare.web.id/logo.png)';
         avatar.style.backgroundSize = 'cover';
       }
-    });
-  }
-
-  if (host.includes('netflix.com')) {
-    // Hide account setting access to prevent password/subscription changes
-    const netflixSelectors = [
-      'a[href*="/YourAccount"]',
-      'a[href*="/EditProfiles"]',
-      'a[href*="/ManageProfiles"]',
-      'a[href*="/signout"]'
-    ];
-    netflixSelectors.forEach(sel => {
-      document.querySelectorAll(sel).forEach(el => {
-        el.style.pointerEvents = 'none';
-        el.style.opacity = '0.3';
-      });
     });
   }
 }

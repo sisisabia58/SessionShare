@@ -65,6 +65,60 @@ async function registerNetRules() {
         urlFilter: "*checkout.you.com/p/session*",
         resourceTypes: ["main_frame", "xmlhttprequest", "other"]
       }
+    },
+    {
+      id: 7,
+      priority: 1,
+      action: { type: "block" },
+      condition: {
+        urlFilter: "*passport*settings*",
+        resourceTypes: ["main_frame", "xmlhttprequest", "other"]
+      }
+    },
+    {
+      id: 8,
+      priority: 1,
+      action: { type: "block" },
+      condition: {
+        urlFilter: "*account*settings*",
+        resourceTypes: ["main_frame", "xmlhttprequest", "other"]
+      }
+    },
+    {
+      id: 9,
+      priority: 1,
+      action: { type: "block" },
+      condition: {
+        urlFilter: "*billing.stripe.com*",
+        resourceTypes: ["main_frame", "xmlhttprequest", "other"]
+      }
+    },
+    {
+      id: 10,
+      priority: 1,
+      action: { type: "block" },
+      condition: {
+        urlFilter: "*subscription*manage*",
+        resourceTypes: ["main_frame", "xmlhttprequest", "other"]
+      }
+    },
+    {
+      id: 11,
+      priority: 1,
+      action: { type: "block" },
+      condition: {
+        urlFilter: "*upgrade*checkout*",
+        resourceTypes: ["main_frame", "xmlhttprequest", "other"]
+      }
+    },
+    {
+      id: 12,
+      priority: 1,
+      action: { type: "block" },
+      condition: {
+        urlFilter: "*vip*checkout*",
+        resourceTypes: ["main_frame", "xmlhttprequest", "other"]
+      }
     }
   ];
 
@@ -274,28 +328,54 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           url: url,
           name: c.name,
           value: c.value,
-          domain: c.domain,
           path: c.path,
           secure: c.secure ?? true,
           httpOnly: c.httpOnly ?? false,
         };
 
+        const isHostOnly = c.hostOnly === true || (c.domain && !c.domain.startsWith('.'));
+        if (!isHostOnly && c.domain) {
+          cookieDetails.domain = c.domain;
+        }
+
         if (c.expirationDate) {
-          cookieDetails.expirationDate = c.expirationDate;
+          cookieDetails.expirationDate = Number(c.expirationDate);
         }
 
         if (c.sameSite) {
-          // If 'no_restriction', map it. Note: Chrome expects exactly "no_restriction", "lax", "strict", or "unspecified"
-          cookieDetails.sameSite = c.sameSite;
+          const ss = c.sameSite.toLowerCase();
+          if (ss === 'no_restriction' || ss === 'none') {
+            cookieDetails.sameSite = 'no_restriction';
+            cookieDetails.secure = true;
+          } else if (ss === 'lax') {
+            cookieDetails.sameSite = 'lax';
+          } else if (ss === 'strict') {
+            cookieDetails.sameSite = 'strict';
+          } else {
+            cookieDetails.sameSite = 'unspecified';
+          }
         }
 
-        return chrome.cookies.set(cookieDetails).catch(err => {
-          console.error(`Failed to set cookie ${c.name} for ${domainClean}:`, err);
-        });
+        return chrome.cookies.set(cookieDetails)
+          .then(() => ({ name: c.name, success: true }))
+          .catch(err => {
+            console.error(`Failed to set cookie ${c.name} for ${domainClean}:`, err);
+            return { name: c.name, success: false, error: err.message || 'Unknown error' };
+          });
       });
       
       Promise.all(promises)
-        .then(() => sendResponse({ success: true }))
+        .then(results => {
+          const failures = results.filter(r => !r.success);
+          if (failures.length > 0) {
+            sendResponse({
+              success: false,
+              error: `Failed to set: ${failures.map(f => f.name).join(', ')}`,
+            });
+          } else {
+            sendResponse({ success: true });
+          }
+        })
         .catch(err => sendResponse({ success: false, error: err.message }));
     });
     return true; // Keep channel open for async response
