@@ -100,12 +100,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     try {
       await supabase.auth.signOut();
-    } catch {
-      // Network failed — force clear all local auth state manually
-      setUser(null);
-      setSession(null);
+    } catch (err) {
+      console.warn("SignOut request threw an error:", err);
     }
+
+    // Unconditionally clear all local auth and profile state
+    setUser(null);
+    setSession(null);
     setProfile(null);
+
+    // Unconditionally delete the local storage auth token so it doesn't persist on page refresh/reload
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (supabaseUrl) {
+        const ref = new URL(supabaseUrl).hostname.split('.')[0];
+        localStorage.removeItem(`sb-${ref}-auth-token`);
+      }
+      localStorage.removeItem('sb-qohaalvaxkmtdpzdqahn-auth-token');
+    } catch (e) {
+      console.error("Failed to clear localStorage token:", e);
+    }
   }, []);
 
   return (
