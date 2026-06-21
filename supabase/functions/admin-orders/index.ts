@@ -86,6 +86,43 @@ serve(async (req: Request) => {
       if (userErr) return createErrorResponse(500, "DATABASE_ERROR", "Order updated but failed to activate user plan");
     }
 
+    // If cancelling: notify Pakasir so their dashboard reflects the change too.
+    // Soft failure — if Pakasir errors (e.g. QR already expired), we still return success.
+    if (status === "cancelled") {
+      const pakasirProject = Deno.env.get("PAKASIR_PROJECT_SLUG") ?? "";
+      const pakasirApiKey  = Deno.env.get("PAKASIR_API_KEY") ?? "";
+
+      // Re-fetch order with pakasir fields (not included in original select)
+      const { data: fullOrder } = await adminClient
+        .from("orders")
+        .select("pakasir_order_id, total_price")
+        .eq("id", id)
+        .single();
+
+      if (fullOrder?.pakasir_order_id && pakasirApiKey && pakasirProject) {
+        try {
+          const pakasirRes = await fetch("https://app.pakasir.com/api/transactioncancel", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              project: pakasirProject,
+              order_id: fullOrder.pakasir_order_id,
+              amount: fullOrder.total_price,
+              api_key: pakasirApiKey,
+            }),
+          });
+          if (!pakasirRes.ok) {
+            const errBody = await pakasirRes.text();
+            console.warn(`[admin-orders] Pakasir cancel non-OK for ${fullOrder.pakasir_order_id}: ${errBody}`);
+          } else {
+            console.log(`[admin-orders] ✅ Pakasir cancel notified for order ${fullOrder.pakasir_order_id}`);
+          }
+        } catch (err) {
+          console.warn(`[admin-orders] Failed to reach Pakasir cancel API: ${err}`);
+        }
+      }
+    }
+
     return createJsonResponse({ success: true, status });
   }
 

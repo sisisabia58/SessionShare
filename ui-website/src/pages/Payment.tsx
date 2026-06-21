@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, AlertCircle, Download } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Download, X } from 'lucide-react';
 import { DashboardNavbar } from '../components/DashboardNavbar';
 import { Footer } from '../components/Footer';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -22,6 +22,8 @@ export function Payment() {
 
   const [timeLeft, setTimeLeft] = useState<string>('');
   const [isExpired, setIsExpired] = useState<boolean>(false);
+  const [isCancelling, setIsCancelling] = useState<boolean>(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState<boolean>(false);
   const pollTimerRef = useRef<ReturnType<typeof setInterval>>();
   const countTimerRef = useRef<ReturnType<typeof setInterval>>();
   const qrRef = useRef<HTMLDivElement>(null);
@@ -169,6 +171,20 @@ export function Payment() {
     };
   }, [orderId, qrString, expiredAtStr, navigate, showToast]);
 
+  // Cancel order: notify Pakasir + update DB, then navigate away
+  const handleCancel = async () => {
+    setIsCancelling(true);
+    try {
+      await paymentApi.cancelOrder(orderId!);
+      showToast('info', 'Payment cancelled successfully.');
+      navigate('/order-premium');
+    } catch (err: any) {
+      showToast('error', err?.message ?? 'Failed to cancel payment. Please try again.');
+      setIsCancelling(false);
+      setShowCancelConfirm(false);
+    }
+  };
+
   if (!orderId || !qrString) {
     return null;
   }
@@ -296,12 +312,13 @@ export function Payment() {
 
               {/* Actions */}
               <div className="space-y-4 pt-4">
-
-                <Link
-                  to="/order-premium"
-                  className="w-full flex items-center justify-center py-4 rounded-full border border-white/10 text-zinc-400 font-medium hover:bg-white/5 hover:text-white transition-colors">
+                <button
+                  onClick={() => setShowCancelConfirm(true)}
+                  disabled={isExpired}
+                  className="w-full flex items-center justify-center py-4 rounded-full border border-white/10 text-zinc-400 font-medium hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
                   Cancel Payment
-                </Link>
+                </button>
               </div>
             </div>
           </motion.div>
@@ -309,6 +326,70 @@ export function Payment() {
       </main>
 
       <Footer />
+
+      {/* ── Confirmation Modal ────────────────────────────────────── */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => !isCancelling && setShowCancelConfirm(false)}
+          />
+
+          {/* Card */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative glass-card rounded-2xl p-6 sm:p-8 w-full max-w-sm space-y-5 border border-white/10"
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowCancelConfirm(false)}
+              disabled={isCancelling}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors disabled:opacity-40"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Icon + heading */}
+            <div className="flex flex-col items-center text-center gap-3 pt-2">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <X className="w-6 h-6 text-red-400" />
+              </div>
+              <h2 className="text-lg font-bold">Cancel this payment?</h2>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                The QR code will be invalidated and your pending order will be
+                cancelled. You can start a new transaction anytime.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-3 pt-1">
+              <button
+                onClick={handleCancel}
+                disabled={isCancelling}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-red-500 text-white font-bold hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCancelling ? (
+                  <>
+                    <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  'Yes, Cancel Payment'
+                )}
+              </button>
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                disabled={isCancelling}
+                className="w-full py-3.5 rounded-full border border-white/10 text-zinc-400 font-medium hover:bg-white/5 hover:text-white transition-colors disabled:opacity-40"
+              >
+                Keep QR
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

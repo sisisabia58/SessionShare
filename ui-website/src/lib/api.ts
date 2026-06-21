@@ -110,6 +110,12 @@ export const paymentApi = {
     total_days: number;
     amount: number;
   }) => apiFetch<CreateOrderResponse>('/pakasir-create', { method: 'POST', body: JSON.stringify(data) }),
+
+  cancelOrder: (orderId: string) =>
+    apiFetch<{ cancelled: boolean; pakasir_notified: boolean }>('/pakasir-cancel', {
+      method: 'POST',
+      body: JSON.stringify({ order_id: orderId }),
+    }),
 };
 
 // ── Services API ──────────────────────────────────────────────────
