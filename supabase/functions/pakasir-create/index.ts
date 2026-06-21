@@ -89,12 +89,18 @@ serve(async (req: Request) => {
   const pakasirData = await pakasirRes.json();
   const payment = pakasirData.payment;
 
-  // 4. Save QR string + expiry back to order row
+  // 4. Compute our own 15-minute expiry (Pakasir defaults to ~1 hour, which is too long)
+  //    The QR is still technically valid on Pakasir's side after 15 min, but our system
+  //    will treat it as expired and stop polling.
+  const EXPIRY_MINUTES = 15;
+  const ourExpiredAt = new Date(Date.now() + EXPIRY_MINUTES * 60 * 1000).toISOString();
+
+  // Save QR string + our expiry back to order row
   await adminClient
     .from("orders")
     .update({
       pakasir_payment_number: payment.payment_number,
-      pakasir_expired_at: payment.expired_at,
+      pakasir_expired_at: ourExpiredAt,
     })
     .eq("id", order.id);
 
@@ -102,7 +108,7 @@ serve(async (req: Request) => {
   return createJsonResponse({
     order_id: order.id,
     qr_string: payment.payment_number,
-    expired_at: payment.expired_at,
+    expired_at: ourExpiredAt,
     total_payment: payment.total_payment,
   }, 201);
 });

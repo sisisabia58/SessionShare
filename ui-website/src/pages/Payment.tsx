@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, AlertCircle, FlaskConical } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Download } from 'lucide-react';
 import { DashboardNavbar } from '../components/DashboardNavbar';
 import { Footer } from '../components/Footer';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -22,12 +22,20 @@ export function Payment() {
 
   const [timeLeft, setTimeLeft] = useState<string>('');
   const [isExpired, setIsExpired] = useState<boolean>(false);
-  const [isSimulating, setIsSimulating] = useState<boolean>(false);
   const pollTimerRef = useRef<ReturnType<typeof setInterval>>();
   const countTimerRef = useRef<ReturnType<typeof setInterval>>();
+  const qrRef = useRef<HTMLDivElement>(null);
 
-  // Detect sandbox mode: Pakasir returns a fixed placeholder QR string in sandbox
-  const isSandbox = qrString?.startsWith('THIS.IS.JUST.AN.EXAMPLE');
+  // Download the QR as a PNG — works on mobile (no need to scan directly)
+  const handleDownloadQR = () => {
+    const canvas = qrRef.current?.querySelector('canvas') as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `SessionShare-QRIS-${orderId?.slice(0, 8) ?? 'payment'}.png`;
+    link.click();
+  };
 
   useEffect(() => {
     if (!orderId || !qrString || !expiredAtStr) {
@@ -40,15 +48,30 @@ export function Payment() {
     const expiryTime = new Date(expiredAtStr).getTime();
 
     // 1. Countdown timer
-    const updateCountdown = () => {
+    const updateCountdown = async () => {
       const now = Date.now();
       const diff = expiryTime - now;
 
       if (diff <= 0) {
-        setIsExpired(true);
-        setTimeLeft('Expired');
         if (countTimerRef.current) clearInterval(countTimerRef.current);
         if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+
+        // Final status check before showing "Expired":
+        // User may have paid after the 15-min UI deadline but within Pakasir's
+        // real 1-hour window. If the webhook already processed it, redirect.
+        try {
+          const { order } = await userApi.getOrder(orderId!);
+          if (order.status === 'completed') {
+            showToast('success', 'Payment received! Premium plan activated.');
+            navigate('/dashboard');
+            return;
+          }
+        } catch {
+          // Silently fall through to expired state
+        }
+
+        setIsExpired(true);
+        setTimeLeft('Expired');
       } else {
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
@@ -158,7 +181,7 @@ export function Payment() {
                       <span className="text-[10px] text-zinc-400 mt-1">Please create a new transaction.</span>
                     </div>
                   ) : (
-                    <div className="p-2 bg-white rounded-xl border border-zinc-200">
+                    <div ref={qrRef} className="p-2 bg-white rounded-xl border border-zinc-200">
                       <QRCodeCanvas value={qrString} size={200} />
                     </div>
                   )}
@@ -177,6 +200,14 @@ export function Payment() {
                     <span className="text-sm text-zinc-400 font-medium mt-1">
                       Expires in: <strong className="text-lime-400 font-mono">{timeLeft}</strong>
                     </span>
+                    {/* Download QR — helpful on mobile where direct scanning isn't always possible */}
+                    <button
+                      onClick={handleDownloadQR}
+                      className="flex items-center gap-2 text-xs text-zinc-400 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2 rounded-full transition-colors mt-1"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Save QR as image
+                    </button>
                   </div>
                 )}
               </div>
@@ -206,27 +237,6 @@ export function Payment() {
 
               {/* Actions */}
               <div className="space-y-4 pt-4">
-                {/* Sandbox simulate button — only visible when using Pakasir sandbox */}
-                {isSandbox && !isExpired && (
-                  <button
-                    onClick={async () => {
-                      setIsSimulating(true);
-                      try {
-                        await paymentApi.simulatePayment(orderId);
-                        showToast('success', 'Payment simulated! Waiting for webhook...');
-                      } catch (err: any) {
-                        showToast('error', err?.message ?? 'Simulation failed');
-                      } finally {
-                        setIsSimulating(false);
-                      }
-                    }}
-                    disabled={isSimulating}
-                    className="w-full flex items-center justify-center gap-2 py-4 rounded-full bg-amber-400/10 border border-amber-400/40 text-amber-300 font-bold hover:bg-amber-400/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <FlaskConical className="w-4 h-4" />
-                    {isSimulating ? 'Simulating...' : '🧪 Simulate Payment (Sandbox)'}
-                  </button>
-                )}
 
                 <Link
                   to="/order-premium"

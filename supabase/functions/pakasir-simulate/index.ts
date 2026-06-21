@@ -8,9 +8,20 @@ const PAKASIR_SIMULATE_API = "https://app.pakasir.com/api/paymentsimulation";
 const PAKASIR_PROJECT = Deno.env.get("PAKASIR_PROJECT_SLUG") ?? "";
 const PAKASIR_API_KEY = Deno.env.get("PAKASIR_API_KEY") ?? "";
 
+// Guard: simulation is only permitted in sandbox environments.
+// In production, PAKASIR_SANDBOX is "false" (or unset), so this function
+// will immediately reject all requests with 403.
+const IS_SANDBOX = Deno.env.get("PAKASIR_SANDBOX") === "true";
+
+
 serve(async (req: Request) => {
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
+
+  // Production kill-switch: reject immediately if not in sandbox mode
+  if (!IS_SANDBOX) {
+    return createErrorResponse(403, "FORBIDDEN", "Payment simulation is only available in sandbox mode.");
+  }
 
   if (req.method !== "POST")
     return createErrorResponse(405, "METHOD_NOT_ALLOWED", "Only POST is allowed");

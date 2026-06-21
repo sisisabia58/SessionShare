@@ -25,7 +25,7 @@ serve(async (req: Request) => {
   let body: any;
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
 
-  const { amount, order_id, project, status, completed_at } = body;
+  const { amount, order_id, project, status, completed_at, payment_method } = body;
 
   // ── 1. Verify project slug ────────────────────────────────────────
   if (!project || project !== PAKASIR_PROJECT) {
@@ -94,6 +94,6 @@ serve(async (req: Request) => {
     // Admin can force-complete via admin panel if needed
   }
 
-  console.log(`[pakasir-webhook] ✅ Plan activated: user=${order.user_id} plan=${order.plan} until=${premiumUntil.toISOString()}`);
+  console.log(`[pakasir-webhook] ✅ Plan activated: user=${order.user_id} plan=${order.plan} until=${premiumUntil.toISOString()} via=${payment_method ?? "unknown"}`);
   return json({ received: true, activated: true });
 });
