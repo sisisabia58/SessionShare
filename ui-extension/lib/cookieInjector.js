@@ -75,21 +75,35 @@ export async function injectServiceCookies(serviceId) {
         url: url,
         name: cookie.name,
         value: cookie.value,
-        domain: cookie.domain || undefined,
         path: cookie.path || undefined,
-        secure: cookie.secure ?? undefined,
-        httpOnly: cookie.httpOnly ?? undefined,
-        sameSite: cookie.sameSite || undefined,
+        secure: cookie.secure ?? true,
+        httpOnly: cookie.httpOnly ?? false,
       };
+
+      // Only set domain for domain cookies; omit for hostOnly cookies
+      const isHostOnly = cookie.hostOnly === true || (cookie.domain && !cookie.domain.startsWith('.'));
+      if (!isHostOnly && cookie.domain) {
+        details.domain = cookie.domain;
+      }
 
       // If expirationDate is present, ensure it is a number or null
       if (cookie.expirationDate !== undefined && cookie.expirationDate !== null) {
         details.expirationDate = Number(cookie.expirationDate);
       }
 
-      // If hostOnly is true, domain should not be passed to chrome.cookies.set
-      if (cookie.hostOnly) {
-        delete details.domain;
+      // Normalize sameSite to Chrome API values + enforce secure for no_restriction
+      if (cookie.sameSite) {
+        const ss = cookie.sameSite.toLowerCase();
+        if (ss === 'no_restriction' || ss === 'none') {
+          details.sameSite = 'no_restriction';
+          details.secure = true;
+        } else if (ss === 'lax') {
+          details.sameSite = 'lax';
+        } else if (ss === 'strict') {
+          details.sameSite = 'strict';
+        } else {
+          details.sameSite = 'unspecified';
+        }
       }
 
       api.cookies.set(details, (cookieResult) => {
