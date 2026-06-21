@@ -26,13 +26,72 @@ export function Payment() {
   const countTimerRef = useRef<ReturnType<typeof setInterval>>();
   const qrRef = useRef<HTMLDivElement>(null);
 
-  // Download the QR as a PNG — works on mobile (no need to scan directly)
+  // Download the full QRIS card (header + QR + footer) as a PNG.
+  // We draw everything onto an offscreen canvas to match the white card UI.
   const handleDownloadQR = () => {
-    const canvas = qrRef.current?.querySelector('canvas') as HTMLCanvasElement | null;
-    if (!canvas) return;
-    const url = canvas.toDataURL('image/png');
+    const qrCanvas = qrRef.current?.querySelector('canvas') as HTMLCanvasElement | null;
+    if (!qrCanvas) return;
+
+    // 2× scale for sharp output on retina/mobile screens
+    const scale    = 2;
+    const qrSize   = 200 * scale;
+    const pad      = 28 * scale;
+    const headerH  = 48 * scale;
+    const footerH  = 44 * scale;
+    const radius   = 18 * scale;
+
+    const W = qrSize + pad * 2;
+    const H = qrSize + headerH + footerH + pad * 2;
+
+    const out = document.createElement('canvas');
+    out.width  = W;
+    out.height = H;
+    const ctx = out.getContext('2d')!;
+
+    // ── White rounded card background ──────────────────────────────
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(0, 0, W, H, radius);
+    ctx.fill();
+
+    // ── Header: "QRIS" left, "SESSION SHARE" right ─────────────────
+    const headerMidY = pad + headerH / 2;
+    ctx.textBaseline = 'middle';
+
+    ctx.fillStyle = '#000000';
+    ctx.font = `bold ${18 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.fillText('QRIS', pad, headerMidY);
+
+    ctx.fillStyle = '#71717a';
+    ctx.font = `${8 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.fillText('SESSION SHARE', W - pad, headerMidY);
+
+    // ── QR code (with thin border) ──────────────────────────────────
+    const qrX = pad;
+    const qrY = pad + headerH;
+
+    ctx.strokeStyle = '#e4e4e7';
+    ctx.lineWidth = 1 * scale;
+    const bPad = 4 * scale;
+    ctx.strokeRect(qrX - bPad, qrY - bPad, qrSize + bPad * 2, qrSize + bPad * 2);
+
+    ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+
+    // ── Footer text ─────────────────────────────────────────────────
+    ctx.fillStyle = '#a1a1aa';
+    ctx.font = `${8 * scale}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      'One QR for all e-wallets & mobile banking',
+      W / 2,
+      qrY + qrSize + footerH / 2 + 4 * scale,
+    );
+
+    // ── Trigger download ────────────────────────────────────────────
     const link = document.createElement('a');
-    link.href = url;
+    link.href     = out.toDataURL('image/png');
     link.download = `SessionShare-QRIS-${orderId?.slice(0, 8) ?? 'payment'}.png`;
     link.click();
   };
